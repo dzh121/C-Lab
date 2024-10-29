@@ -3,5 +3,6 @@
     "*.ejs": "html",
     "*.css": "tailwindcss",
     "stdio.h": "c"
-  }
+  },
+  "workbench.colorTheme": "Visual Studio Dark - C++"
 }
