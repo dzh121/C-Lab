@@ -3,5 +3,6 @@ project(C_Lab C)
 
 set(CMAKE_C_STANDARD 90)
 
+
 add_executable(mamman11_main "Mamman 11/main.c")
 add_executable(testing_main "testing/main.c")
