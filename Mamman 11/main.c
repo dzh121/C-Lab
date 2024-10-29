@@ -3,7 +3,7 @@
 int main()
 {
   int i;
-  printf("Hello, Worldidk!\n");
+  printf("Hello, World!\n");
   i = 2;
   printf("%d", i);
 
