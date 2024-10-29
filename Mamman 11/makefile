@@ -1,4 +1,3 @@
-all: my_program
 
 my_program: main.o
 	gcc -Wall -ansi -g main.o -o main
