@@ -2,11 +2,11 @@
 #include <ctype.h>
 
 int main() {
-    // Variable declarations
+    /* Variable declarations and initializations */
     int c, sentence_count, in_quotes;
     sentence_count = in_quotes = 0;
 
-    // Print instructions
+    /* Print instructions */
     printf("Please enter a text for it to be reformatted according to the following rules:\n");
     printf("1. If the first character of a sentence is a lowercase letter, convert it to uppercase.\n");
     printf("2. Within quoted text, convert all lowercase letters to uppercase.\n");
@@ -15,39 +15,39 @@ int main() {
     printf("5. Any non-alphabetic, non-digit character will be printed as is, including punctuation and whitespace.\n");
     printf("Your text:\n");
 
-    // Main text processing loop
+    /* Main text processing loop */
     while ((c = getchar()) != EOF) {
-        // Toggle in_quotes when encountering quotes
+        /* Toggle in_quotes when encountering quotes */
         if (c == '"') {
             in_quotes = !in_quotes;
             printf("%c", c);
             continue;
         }
 
-        // Reset sentence count when encountering a period outside of quotes
+        /* Reset sentence count when encountering a period outside of quotes */
         if (c == '.' && !in_quotes) {
             sentence_count = 0;
             printf("%c", c);
             continue;
         }
 
-        // Print punctuation and whitespace
+        /* Print punctuation and whitespace */
         if (isspace(c) || ispunct(c)) {
             printf("%c", c);
         }
-        // Skip digits
+        /* Skip digits */
         else if (!isdigit(c)) {
-            sentence_count++; // Count characters in the current sentence to check if its first
+            sentence_count++; /* Count characters in the current sentence to check if its first */
 
-            // Rule 1: Capitalize the first alphabetic character of a sentence
+            /* Rule 1: Capitalize the first alphabetic character of a sentence */
             if (sentence_count == 1 && isalpha(c)) {
                 printf("%c", toupper(c));
             }
-            // Rule 2: Convert lowercase to uppercase if inside quotes
+            /* Rule 2: Convert lowercase to uppercase if inside quotes */
             else if (in_quotes && isalpha(c)) {
                 printf("%c", toupper(c));
             }
-            // Rule 3: Convert uppercase letters to lowercase elsewhere
+            /* Rule 3: Convert uppercase letters to lowercase elsewhere */
             else if (isalpha(c)) {
                 printf("%c", tolower(c));
             }
