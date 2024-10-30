@@ -1,5 +1,5 @@
-main: main.o
+testing: main.o
 	gcc -Wall -ansi -pedantic -g main.o -o main
 
 main.o: main.c
-	gcc -Wall -ansi -pedantic -g -c main.c -o main.o
+	gcc -c main.c -Wall -ansi -pedantic -g -o main.o
