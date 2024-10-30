@@ -1,0 +1,17 @@
+Please enter a text for it to be reformatted according to the following rules:
+1. If the first character of a sentence is a lowercase letter, convert it to uppercase.
+2. Within quoted text, convert all lowercase letters to uppercase.
+3. In other text, convert all uppercase letters to lowercase (if not in rules 1 or 2).
+4. Digits (0–9) will not be printed and will be skipped.
+5. Any non-alphabetic, non-digit character will be printed as is, including punctuation and whitespace.
+Your text:
+I am young. You are young. All of us are young.
+"I THINK WE NEED SOME HELP. PLEASE" help. No, no no,
+i do not
+ need help
+ 
+whatsoever.
+"TODAYS DATE IS
+ //"...
+I am  years old, are you  years old? maybe  years?
+
