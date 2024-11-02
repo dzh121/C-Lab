@@ -4,5 +4,6 @@ project(C_Lab C)
 set(CMAKE_C_STANDARD 90)
 
 
-add_executable(mamman11_main "Mamman 11/q1/letters.c")
+add_executable(mamman11_q1_main "Mamman 11/q1/letters.c")
+add_executable(mamman11_q2_main "Mamman 11/q2/xy_bits.c")
 add_executable(testing_main "testing/main.c")
