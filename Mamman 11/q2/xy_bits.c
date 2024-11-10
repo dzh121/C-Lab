@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <ctype.h>
 
+/* Turn on bit number bit in x */
 unsigned long turnOnBit(unsigned long x, int bit)
 {
 	/* Move 1 to the left by bit and OR it with x */
 	return x | (1 << bit);
 }
 
+/* Check if bit number bit is on in x */
 unsigned long checkIfBitIsOn(unsigned long x, int bit)
 {
 	/* Shift number to right and AND to check if it is on*/
 	return (x >> bit) & 1;
 }
 
+/* Print the binary representation of x */
 void printBinary(unsigned long x)
 {
 	/* Loop through the bits of x (unsigned  long has 32 bits) */
