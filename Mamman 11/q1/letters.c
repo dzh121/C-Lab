@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <ctype.h>
 
+/*
+ * This program processes text input according to the following rules:
+ * 1. If the first character of a sentence is a lowercase letter, it converts it to uppercase.
+ * 2. Within quoted text, it converts all lowercase letters to uppercase.
+ * 3. In other text, it converts all uppercase letters to lowercase (unless rule 1 or 2 applies).
+ * 4. Digits (0–9) are ignored and not printed.
+ * 5. Any non-alphabetic, non-digit characters are printed as they are, including punctuation and whitespace.
+ */
 int main()
 {
 	/* Variable declarations and initializations */
