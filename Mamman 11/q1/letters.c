@@ -23,7 +23,7 @@ int main()
 		if (c == '"')
 		{
 			in_quotes = !in_quotes;
-			printf("%c", c);
+			putchar(c);
 			continue;
 		}
 
@@ -31,14 +31,14 @@ int main()
 		if (c == '.' && !in_quotes)
 		{
 			sentence_count = 0;
-			printf("%c", c);
+			putchar(c);
 			continue;
 		}
 
 		/* Print punctuation and whitespace */
 		if (isspace(c) || ispunct(c))
 		{
-			printf("%c", c);
+			putchar(c);
 		}
 		/* Skip digits */
 		else if (!isdigit(c))
@@ -48,17 +48,17 @@ int main()
 			/* Rule 1: Capitalize the first alphabetic character of a sentence */
 			if (sentence_count == 1 && isalpha(c))
 			{
-				printf("%c", toupper(c));
+				putchar(toupper(c));
 			}
 			/* Rule 2: Convert lowercase to uppercase if inside quotes */
 			else if (in_quotes && isalpha(c))
 			{
-				printf("%c", toupper(c));
+				putchar(toupper(c));
 			}
 			/* Rule 3: Convert uppercase letters to lowercase elsewhere */
 			else if (isalpha(c))
 			{
-				printf("%c", tolower(c));
+				putchar(tolower(c));
 			}
 		}
 	}
