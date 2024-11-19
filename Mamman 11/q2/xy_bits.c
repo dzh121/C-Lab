@@ -11,7 +11,7 @@ unsigned long turnOnBit(unsigned long x, int bit)
 /* Check if bit number bit is on in x */
 unsigned long checkIfBitIsOn(unsigned long x, int bit)
 {
-	/* Shift number to right and AND to check if it is on*/
+	/* Shift number to right and AND to check if it is on */
 	return (x >> bit) & 1;
 }
 
@@ -56,8 +56,8 @@ int main()
 	printBinary(x);
 	printf("---------------------------------------------------\n");
 
-	/* Check if bit number 6 is on in y and print accordingly */
-	printf("Bit number 6 for y is on? ");
+	/* Check if bit number 6 is on in second number and print accordingly */
+	printf("Bit number 6 for second number is on? ");
 	if (checkIfBitIsOn(y, 6))
 		printf("YES\n");
 	else

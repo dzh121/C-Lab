@@ -47,9 +47,10 @@ int main()
 		if (isspace(c) || ispunct(c))
 		{
 			putchar(c);
+			continue;
 		}
 		/* Skip digits */
-		else if (!isdigit(c))
+		if (!isdigit(c))
 		{
 			sentence_count++; /* Count characters in the current sentence to check if its first */
 
