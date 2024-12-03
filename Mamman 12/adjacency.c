@@ -28,7 +28,8 @@ int path(adjmat mat,  int u, int v)
 }
 void printMatrix(adjmat mat)
 {
-	int i, j;
+	/* print the matrix */
+	int i, j; /* loop variables */
 	for(i=0; i < N; i++)
 	{
 		for(j=0; j < N; j++)
