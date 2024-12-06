@@ -1,0 +1,31 @@
+Enter values for 11:11 adjacency matrix:
+The adjacency matrix you entered:
+0 	0 	0 	0 	1 	1 	0 	1 	0 	1 	1 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	1 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+1 	0 	1 	0 	0 	0 	0 	0 	1 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	1 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+0 	0 	0 	0 	0 	0 	0 	0 	0 	0 	0 
+
+Enter two nodes to check if one is a ancestor of the other, enter -1 -1 or EOF to stop:
+Checking if 0 is an ancestor of 9
+0 is an ancestor of 9
+
+Enter two nodes to check if there is a path between them, enter -1 -1 or EOF to stop:
+Checking if 6 is an ancestor of 1
+6 is an ancestor of 1
+
+Enter two nodes to check if there is a path between them, enter -1 -1 or EOF to stop:
+Checking if 2 is an ancestor of 10
+2 is not an ancestor of 10
+
+Enter two nodes to check if there is a path between them, enter -1 -1 or EOF to stop:
+Checking if 1 is an ancestor of 2
+1 is not an ancestor of 2
+
+Enter two nodes to check if there is a path between them, enter -1 -1 or EOF to stop:
