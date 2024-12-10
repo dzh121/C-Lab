@@ -1,0 +1,14 @@
+read_comp A, 45.1, -23.75
+read_comp B, 54.2, 3.56
+read_comp C, 0, -1
+print_comp A
+print_comp B
+print_comp C
+add_comp A, B
+sub_comp C, A
+mult_comp_real A, 2.51
+mult_comp_img A, -2.564
+mult_comp_comp A, B
+abs_comp A
+abs_comp B
+stop
