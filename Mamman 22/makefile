@@ -1,5 +1,5 @@
 mycomp: mycomp.o input.o complex.o
-	gcc -g -ansi mycomp.o input.o complex.o -o mycomp -lm
+	gcc -g -Wall -ansi -pedantic mycomp.o input.o complex.o -o mycomp -lm
 
 mycomp.o: mycomp.c input.h
 	gcc -c -Wall -ansi -pedantic mycomp.c -o mycomp.o

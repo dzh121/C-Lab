@@ -1,0 +1,46 @@
+--------------------------------------
+Enter a command:
+You entered: read_comp A, 3.5, 5.1
+--------------------------------------
+Enter a command:
+You entered: read_comp B, 2, 3
+--------------------------------------
+Enter a command:
+You entered: print_comp A
+3.50 + (5.10)i
+--------------------------------------
+Enter a command:
+You entered: print_comp B
+2.00 + (3.00)i
+--------------------------------------
+Enter a command:
+You entered: add_comp A, B
+5.50 + (8.10)i
+--------------------------------------
+Enter a command:
+You entered: sub_comp A, B
+1.50 + (2.10)i
+--------------------------------------
+Enter a command:
+You entered: mult_comp_real A, 2.21
+7.73 + (11.27)i
+--------------------------------------
+Enter a command:
+You entered: mult_comp_img A, 3.4
+-17.34 + (11.90)i
+--------------------------------------
+Enter a command:
+You entered: mult_comp_comp A, B
+-8.30 + (20.70)i
+--------------------------------------
+Enter a command:
+You entered: abs_comp A
+6.19
+--------------------------------------
+Enter a command:
+You entered: abs_comp B
+3.61
+--------------------------------------
+Enter a command:
+You entered: stop
+Goodbye!

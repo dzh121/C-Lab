@@ -2,69 +2,86 @@
 #include <stdio.h>
 #include <math.h>
 
-void read_comp(complex *a, double real, double imaginary) {
-	a->real = real;
-	a->imaginary = imaginary;
+void read_comp(complex *comp, double real, double img) {
+    /* Assign real and imaginary parts to the complex number */
+    comp->real = real;
+    comp->imaginary = img;
 }
 
-void print_comp(complex *a) {
-	printf("%.2f", a->real);
-	if (a->imaginary >= 0)
-		printf(" + (%.2f)i\n", a->imaginary);
-	else
-		printf(" - (%.2f)i\n", -a->imaginary);
+void print_comp(complex *comp) {
+    /* Print the real part */
+    printf("%.2f", comp->real);
+
+    /* Print the imaginary part with the correct sign */
+    if (comp->imaginary >= 0)
+        printf(" + (%.2f)i\n", comp->imaginary);
+    else
+        printf(" - (%.2f)i\n", -comp->imaginary);
 }
 
-void add_comp(complex *a, complex *b) {
-	complex temp;
+void add_comp(complex *comp1, complex *comp2) {
+    complex temp;
 
-	temp.real = a->real + b->real;
-	temp.imaginary = a->imaginary + b->imaginary;
+    /* Add real parts and imaginary parts separately */
+    temp.real = comp1->real + comp2->real;
+    temp.imaginary = comp1->imaginary + comp2->imaginary;
 
-	print_comp(&temp);
+    /* Print the result */
+    print_comp(&temp);
 }
 
-void sub_comp(complex *a, complex *b) {
-	complex temp;
+void sub_comp(complex *comp1, complex *comp2) {
+    complex temp;
 
-	temp.real = a->real - b->real;
-	temp.imaginary = a->imaginary - b->imaginary;
+    /* Subtract real parts and imaginary parts separately */
+    temp.real = comp1->real - comp2->real;
+    temp.imaginary = comp1->imaginary - comp2->imaginary;
 
-	print_comp(&temp);
+    /* Print the result */
+    print_comp(&temp);
 }
 
-void mult_comp_real(complex *a, double real) {
-	complex temp;
+void mult_comp_real(complex *comp, double real) {
+    complex temp;
 
-	temp.real = a->real * real;
-	temp.imaginary = a->imaginary *	real;
+    /* Multiply both real and imaginary parts by the num */
+    temp.real = comp->real * real;
+    temp.imaginary = comp->imaginary * real;
 
-	print_comp(&temp);
+    /* Print the result */
+    print_comp(&temp);
 }
 
-void mult_comp_img(complex *a, double img) {
-	complex temp;
+void mult_comp_img(complex *comp, double img) {
+    complex temp;
 
-	temp.real = -(a->imaginary * img);
-	temp.imaginary = a->real *	img;
+    /* Calculate the product with imaginary num */
+    temp.real = -(comp->imaginary * img);
+    temp.imaginary = comp->real * img;
 
-	print_comp(&temp);
+    /* Print the result */
+    print_comp(&temp);
 }
 
-void mult_comp_comp(complex *a, complex *b) {
-	complex temp;
+void mult_comp_comp(complex *comp1, complex *comp2) {
+    complex temp;
 
-	temp.real = a->real*b->real - a->imaginary*b->imaginary;
-	temp.imaginary = a->real*b->imaginary + a->imaginary*b->real;
+    /* Multiply two complex numbers:
+       (a + bi)(c + di) = (ac - bd) + (ad + bc)i */
+    temp.real = comp1->real * comp2->real - comp1->imaginary * comp2->imaginary;
+    temp.imaginary = comp1->real * comp2->imaginary + comp1->imaginary * comp2->real;
 
-	print_comp(&temp);
+    /* Print the result */
+    print_comp(&temp);
 }
 
-void abs_comp(complex *a) {
-	double temp;
+void abs_comp(complex *comp) {
+    double temp;
 
-	temp = pow(a->real,2) + pow(a->imaginary,2);
-	temp = sqrt(temp);
+    /* Calculate the abs using the formula: sqrt(real^2 + imaginary^2) */
+    temp = pow(comp->real, 2) + pow(comp->imaginary, 2);
+    temp = sqrt(temp);
 
-	printf("%.2f\n", temp);
+    /* Print the abs */
+    printf("%.2f\n", temp);
 }

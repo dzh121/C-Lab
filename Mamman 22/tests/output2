@@ -1,0 +1,67 @@
+--------------------------------------
+Enter a command:
+You entered: read_comp G, 3.1, 6.5
+Unidentified complex variable
+--------------------------------------
+Enter a command:
+You entered: read_comp a, 3.6, 5.1
+Unidentified complex variable
+--------------------------------------
+Enter a command:
+You entered: do_it A, B
+Undefined command name
+--------------------------------------
+Enter a command:
+You entered: Add_Comp A, C
+Undefined command name
+--------------------------------------
+Enter a command:
+You entered: read_comp A, 3.5, xyz
+Invalid parameter - not a number
+--------------------------------------
+Enter a command:
+You entered: read_comp A, 3.5
+Missing parameter
+--------------------------------------
+Enter a command:
+You entered: read_comp A, 3.5, -3,
+Extraneous text after end of command
+--------------------------------------
+Enter a command:
+You entered: add_comp B
+Missing parameter
+--------------------------------------
+Enter a command:
+You entered: print_comp C, D
+Extraneous text after end of command
+--------------------------------------
+Enter a command:
+You entered: sub_comp F, , D
+Multiple consecutive commas
+--------------------------------------
+Enter a command:
+You entered: mult_comp_comp F D
+Missing comma
+--------------------------------------
+Enter a command:
+You entered: mult_comp_real, A, 2.5
+Illegal comma
+--------------------------------------
+Enter a command:
+You entered: mult_comp_img A, B
+Invalid parameter - not a number
+--------------------------------------
+Enter a command:
+You entered: abs_comp
+Missing parameter
+--------------------------------------
+Enter a command:
+You entered: abs_comp 2.5
+Unidentified complex variable
+--------------------------------------
+Enter a command:
+You entered: stop A
+Extraneous text after end of command
+--------------------------------------
+Enter a command:
+Reached EOF
