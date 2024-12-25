@@ -13,4 +13,7 @@ add_executable(mamman22_mycomplex "Mamman 22/complex.c"
         "Mamman 22/complex.h")
 add_executable(mamman22_input "Mamman 22/input.c"
         "Mamman 22/input.h")
+add_executable(mamman23_timediff "Mamman 23/timediff.c"
+        "Mamman 23/timediff.h")
+
 add_executable(testing_main "testing/main.c")
