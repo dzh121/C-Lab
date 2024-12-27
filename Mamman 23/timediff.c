@@ -27,12 +27,12 @@ int main(int argc, char* argv[])
 	/* Check if the user entered a file name */
 	if(argc == 1) {
 		/* If the user did not enter a file name, print an error message and exit */
-		printf("Enter a file name as an argument\n");
+		fprintf(stderr, "Enter a file name as an argument\n");
 		exit(1);
 	}
 	if(argc > 2) {
 		/* If the user entered too many arguments, print an error message and exit */
-		printf("Too many arguments\n");
+		fprintf(stderr,"Too many arguments\n");
 		exit(1);
 	}
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 	file = fopen(argv[1], "r");
 	if(file == NULL) {
 		/* If the file could not be opened, print an error message and exit */
-		printf("Error opening file\n");
+		fprintf(stderr,"Error opening file\n");
 		exit(2);
 	}
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 				   &values[4],&values[5], &values[6], &values[7],
 				   &values[8], &values[9], &values[10], &values[11]) != 12) {
 			/* If the line is invalid(one is not an int or not enough values) -> print an error message and continue to the next line */
-			printf("Invalid input in line %d\n", line_count);
+			fprintf(stderr, "Invalid input in line %d\n", line_count);
 			continue;
 		}
 		/* Set the values to the time structures */
