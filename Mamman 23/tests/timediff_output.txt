@@ -1,0 +1,16 @@
+Time 1: 20/12/2025 19:20:08
+Time 2: 02/01/2025 12:25:50
+The time difference is: 30437658 seconds
+
+Time 1: 20/12/-20 19:20:08
+Time 2: 20/12/-18 19:20:08
+The time difference is: 63072000 seconds
+
+Time 1: 10/10/2023 12:32:59
+Time 2: 20/03/2025 18:31:43
+The time difference is: 45467924 seconds
+
+Time 1: 17/07/2018 15:29:00
+Time 2: 27/02/2015 13:21:38
+The time difference is: 106711642 seconds
+
