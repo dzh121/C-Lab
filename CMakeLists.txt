@@ -15,5 +15,17 @@ add_executable(mamman22_input "Mamman 22/input.c"
         "Mamman 22/input.h")
 add_executable(mamman23_timediff "Mamman 23/timediff.c"
         "Mamman 23/timediff.h")
-
+add_executable(mamman14_preproc
+        "Mamman 14/preproc.c"
+        "Mamman 14/preproc.h"
+        "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h"
+        "Mamman 14/assembler.h"
+        "Mamman 14/funcs.h"
+        "Mamman 14/funcs.c"
+        "Mamman 14/errors.c"
+        "Mamman 14/errors.h"
+)
+add_executable(mamman14_data "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h")
 add_executable(testing_main "testing/main.c")
