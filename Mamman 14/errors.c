@@ -10,7 +10,10 @@ void print_internal_error(char *error_message) {
 }
 
 void print_ext_error(char *error_message, char *file_name, int line_number) {
-	if (error_message && file_name) {
+	if (line_number < 0) {
+		fprintf(stderr, "ERROR: %s | File: %s", error_message, file_name);
+	}
+	else if (error_message && file_name) {
 		fprintf(stderr, "ERROR: %s | File: %s | Line: %d\n", error_message, file_name, line_number);
 	} else {
 		fprintf(stderr, "ERROR: Unknown external error.\n");

@@ -1,19 +1,6 @@
 #include "preproc.h"
-#include "error.h"
 #include "errors.h"
 
-int main()
-{
-    int i = preproc("test");
-    if (i == 1)
-    {
-        printf("Success\n");
-    }else
-    {
-        exit(1);
-    }
-    return 0;
-}
 /* Add suffix to a filename dynamically */
 char *add_suffix(const char *file_name, const char *suffix) {
     char *new_name = (char *)handle_malloc(strlen(file_name) + strlen(suffix) + 1);

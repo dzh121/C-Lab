@@ -8,7 +8,6 @@
 #include "data_structure.h"
 #include "assembler.h"
 #include "funcs.h"
-#define MAX_LINE_LENGTH 90
 
 char *add_suffix(const char *file_name, const char *suffix);
 void removeSpaces(char *p);

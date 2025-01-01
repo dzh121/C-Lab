@@ -19,7 +19,12 @@
 #define ERROR_MACRO_NAME_RESERVED "Macro name is reserved."
 #define ERROR_EXTRANEOUS_TEXT_MCROEND "Extraneous text after 'mcroend'."
 #define ERROR_EXTRANEOUS_TEXT_MCRONAME "Extraneous text after macro name."
-
+#define ERROR_PREPROC_FAILED "Preprocessor failed."
+/* First Pass Errors */
+#define ERROR_LABEL_TOO_LONG "Label is too long."
+#define ERROR_LABEL_INVALID "Label is invalid."
+#define ERROR_LABEL_RESERVED "Label is reserved."
+#define ERROR_LABEL_DUP "Label already exists."
 
 void print_internal_error(char *error_message);
 void print_ext_error(char *error_message, char *file_name, int line_number);

@@ -26,6 +26,49 @@ add_executable(mamman14_preproc
         "Mamman 14/errors.c"
         "Mamman 14/errors.h"
 )
+add_executable(mamman14_assembler
+        "Mamman 14/assembler.c"
+        "Mamman 14/assembler.h"
+        "Mamman 14/first_pass.c"
+        "Mamman 14/first_pass.h"
+        "Mamman 14/funcs.c"
+        "Mamman 14/funcs.h"
+        "Mamman 14/errors.c"
+        "Mamman 14/errors.h"
+        "Mamman 14/preproc.c"
+        "Mamman 14/preproc.h"
+        "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h"
+        "Mamman 14/tables.c"
+        "Mamman 14/tables.h")
+add_executable(mamman14_tables
+        "Mamman 14/tables.c"
+        "Mamman 14/tables.h"
+        "Mamman 14/assembler.c"
+        "Mamman 14/assembler.h"
+        "Mamman 14/funcs.c"
+        "Mamman 14/funcs.h"
+        "Mamman 14/errors.c"
+        "Mamman 14/errors.h"
+        "Mamman 14/preproc.c"
+        "Mamman 14/preproc.h"
+        "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h")
+add_executable(mamman14_first_pass
+        "Mamman 14/first_pass.c"
+        "Mamman 14/first_pass.h"
+        "Mamman 14/tables.c"
+        "Mamman 14/tables.h"
+        "Mamman 14/assembler.c"
+        "Mamman 14/assembler.h"
+        "Mamman 14/funcs.c"
+        "Mamman 14/funcs.h"
+        "Mamman 14/errors.c"
+        "Mamman 14/errors.h"
+        "Mamman 14/preproc.c"
+        "Mamman 14/preproc.h"
+        "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h")
 add_executable(mamman14_data "Mamman 14/data_structure.c"
         "Mamman 14/data_structure.h")
 add_executable(testing_main "testing/main.c")
