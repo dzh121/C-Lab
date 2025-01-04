@@ -29,17 +29,17 @@ void print_time(time* tm);
  * - tm1: Pointer to the first time.
  * - tm2: Pointer to the second time.
  * Returns:
- * - int: The difference in seconds between the two times.
+ * - long: The difference in seconds between the two times.
  */
-int time_diff(time* tm1, time* tm2);
+long time_diff(time* tm1, time* tm2);
 
 /*
  * Converts a time to seconds.
  * Parameters:
  * - tm: Pointer to the time to convert.
  * Returns:
- * - int: The time converted to seconds.
+ * - long: The time converted to seconds.
  */
-int time_to_seconds(time* tm);
+long time_to_seconds(time* tm);
 
 #endif

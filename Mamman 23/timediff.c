@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 
 	/* Read the file line by line */
 	while(fgets(line, MAX_LINE, file) != NULL) {
+		line_count++;
 		/* Check if the line is valid and read the 12 values (Year, month, day, hour, minute, second)*2 */
 		if (sscanf(line, "%d %d %d %d %d %d %d %d %d %d %d %d",
 				   &values[0], &values[1], &values[2], &values[3],
@@ -76,16 +77,15 @@ int main(int argc, char* argv[])
 		printf("Time 2: ");
 		print_time(&tm2);
 		/* Print the time difference in seconds */
-		printf("The time difference is: %d seconds\n\n", time_diff(&tm1, &tm2));
-		line_count++;
+		printf("The time difference is: %ld seconds\n\n", time_diff(&tm1, &tm2));
 	}
 	/* Close the file after reading all the lines*/
 	fclose(file);
 	return 0;
 }
-int time_to_seconds(time* tm) {
+long time_to_seconds(time* tm) {
 	/* Define the total seconds */
-	int seconds = 0;
+	long seconds = 0;
 	/* Define the loop var */
 	int i;
 
@@ -105,11 +105,11 @@ int time_to_seconds(time* tm) {
 	/* Return the total seconds */
 	return seconds;
 }
-int time_diff(time* tm1, time* tm2)
+long time_diff(time* tm1, time* tm2)
 {
 	/* Define the total seconds of the time structures */
-	int total_seconds1 = time_to_seconds(tm1);
-	int total_seconds2 = time_to_seconds(tm2);
+	long total_seconds1 = time_to_seconds(tm1);
+	long total_seconds2 = time_to_seconds(tm2);
 	/* Check if the first time is bigger than the second */
 	if (total_seconds1 > total_seconds2)
 	{
