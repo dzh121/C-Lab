@@ -23,12 +23,15 @@ int main(int argc, char *argv[])
         }
         argc--;
     }*/
+    printf("Starting preproc\n");
     int i = preproc("test");
     if(i != 1)
     {
         print_ext_error(ERROR_PREPROC_FAILED, "test", -1);
         exit(1);
     }
+    printf("Preproc done\n");
+    printf("Starting first pass\n");
     first_pass("test.am", &data_list);
 
 

@@ -120,11 +120,11 @@ int first_pass(char *file_name, DataList *data_list) {
         } else {
             after_label = line; /* No label, start from the beginning of the line */
         }
-        if (after_label) {
-            printf("line: %s\n", line);
-            printf("label: %s\n", label);
-            printf("after_label: %s\n", after_label);
-        }
+        // if (after_label) {
+        //     printf("line: %s\n", line);
+        //     printf("label: %s\n", label);
+        //     printf("after_label: %s\n", after_label);
+        // }
 
         if (strncmp(after_label, ".data", 5) == 0) {
             add_label_list(&label_head, label, DC, line_count, DATA, file_name);
@@ -149,7 +149,7 @@ int first_pass(char *file_name, DataList *data_list) {
             /* Process Instruction */
             IC++;
         }
-        printf("IC: %d, DC: %d\n", IC, DC);
+        // printf("IC: %d, DC: %d\n", IC, DC);
     }
     print_data_list(data_list);
     print_label_list(label_head);
