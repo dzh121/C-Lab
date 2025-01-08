@@ -87,8 +87,6 @@ int first_pass(char *file_name, DataList *data_list) {
     FILE *fp;
     char line[MAX_LINE_LENGTH], *after_label, label[MAX_LABEL_SIZE];
     int DID_FAIL = FALSE, label_length;
-    entry_ext_table *entry_head = NULL;
-    entry_ext_table *ext_head = NULL;
     label_table *label_head = NULL;
 
     if((fp = fopen(file_name, "r")) == NULL){
@@ -127,31 +125,44 @@ int first_pass(char *file_name, DataList *data_list) {
         // }
 
         if (strncmp(after_label, ".data", 5) == 0) {
-            add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+            if (label[0] != '\0') {
+                printf("Label32: %s\n", label);
+                add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+            }
             if (!encode_data(after_label, &DC, IC, data_list, file_name, line_count)) {
                 DID_FAIL = TRUE;
                 continue;
             }
         } else if (strncmp(after_label, ".string", 7) == 0) {
-            add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+            if (label[0] != '\0') {
+                printf("Label32: %s\n", label);
+                add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+            }
             if (!encode_string(after_label, &DC, IC, data_list, file_name, line_count)) {
                 DID_FAIL = TRUE;
                 continue;
             }
         } else if (strncmp(after_label, ".extern", 7) == 0) {
-            handle_extern(after_label, &label_head, file_name, line_count);
+            //TODO: handel what comes after .extern labael are meaningless
+            // handle_extern(after_label, &label_head, file_name, line_count);
             /* Process .extern directive */
         } else if (strncmp(after_label, ".entry", 6) == 0) {
             continue; /* Ignore .entry directive we will address that in second pass*/
         } else {
-            add_label_list(&label_head, label, IC, line_count, CODE, file_name);
+            if (label[0] != '\0') {
+                printf("Label32: %s\n", label);
+                add_label_list(&label_head, label, IC, line_count, CODE, file_name);
+            }
             //TODO: process instruction
             /* Process Instruction */
             IC++;
         }
+        memset(label, '\0', sizeof(label));
         // printf("IC: %d, DC: %d\n", IC, DC);
     }
     print_data_list(data_list);
     print_label_list(label_head);
+    test_func(data_list);
+
     return 1;
 }

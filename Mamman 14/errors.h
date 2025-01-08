@@ -26,6 +26,27 @@
 #define ERROR_LABEL_RESERVED "Label is reserved."
 #define ERROR_LABEL_DUP "Label already exists."
 
+/* Code Translation Errors */
+#define ERROR_INSTRUCTION_NOT_FOUND "Instruction not found."
+#define ERROR_INVALID_SOURCE_ADDRESSING_MODE "Invalid source addressing mode."
+#define ERROR_INVALID_DESTINATION_ADDRESSING_MODE "Invalid destination addressing mode."
+#define ERROR_NULL_INSTRUCTION "Instruction is NULL."
+#define ERROR_INVALID_OPCODE "Invalid opcode."
+#define ERROR_INVALID_FUNCT "Invalid funct."
+#define ERROR_INVALID_ADDRESSING_MODE "Invalid addressing mode."
+#define ERROR_INVALID_ARE_BITS "Invalid ARE bits."
+#define ERROR_INVALID_SOURCE_REGISTER "Invalid source register."
+#define ERROR_INVALID_DESTINATION_REGISTER "Invalid destination register."
+#define ERROR_INVALID_OPERAND_TYPE "Invalid operand type."
+#define ERROR_UNIDENTIFIED_VAR "Unidentified variable"
+#define ERROR_ILLEGAL_COMMA "Illegal comma"
+#define ERROR_UNDEFINED_COMMAND "Undefined command name"
+#define ERROR_INVALID_NUMBER "Invalid parameter - not a number"
+#define ERROR_MISSING_OPERAND "Missing operand"
+#define ERROR_MULTIPLE_COMMA "Multiple consecutive commas"
+#define ERROR_EXTRA_TEXT "Extraneous text after end of command"
+#define ERROR_MISSING_COMMA "Missing comma"
+
 void print_internal_error(char *error_message);
 void print_ext_error(char *error_message, char *file_name, int line_number);
 

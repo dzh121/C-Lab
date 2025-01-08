@@ -40,7 +40,9 @@ add_executable(mamman14_assembler
         "Mamman 14/data_structure.c"
         "Mamman 14/data_structure.h"
         "Mamman 14/tables.c"
-        "Mamman 14/tables.h")
+        "Mamman 14/tables.h"
+        "Mamman 14/code_translation.c"
+        "Mamman 14/code_translation.h")
 add_executable(mamman14_tables
         "Mamman 14/tables.c"
         "Mamman 14/tables.h"
@@ -53,8 +55,29 @@ add_executable(mamman14_tables
         "Mamman 14/preproc.c"
         "Mamman 14/preproc.h"
         "Mamman 14/data_structure.c"
-        "Mamman 14/data_structure.h")
+        "Mamman 14/data_structure.h"
+        "Mamman 14/code_translation.c"
+        "Mamman 14/code_translation.h")
 add_executable(mamman14_first_pass
+        "Mamman 14/first_pass.c"
+        "Mamman 14/first_pass.h"
+        "Mamman 14/tables.c"
+        "Mamman 14/tables.h"
+        "Mamman 14/assembler.c"
+        "Mamman 14/assembler.h"
+        "Mamman 14/funcs.c"
+        "Mamman 14/funcs.h"
+        "Mamman 14/errors.c"
+        "Mamman 14/errors.h"
+        "Mamman 14/preproc.c"
+        "Mamman 14/preproc.h"
+        "Mamman 14/data_structure.c"
+        "Mamman 14/data_structure.h"
+        "Mamman 14/code_translation.c"
+        "Mamman 14/code_translation.h")
+add_executable(mamman14_code
+        "Mamman 14/code_translation.c"
+        "Mamman 14/code_translation.h"
         "Mamman 14/first_pass.c"
         "Mamman 14/first_pass.h"
         "Mamman 14/tables.c"

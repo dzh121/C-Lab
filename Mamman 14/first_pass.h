@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include "tables.h"
 #include "assembler.h"
+#include "code_translation.h"
 #include "funcs.h"
 #include "errors.h"
 
