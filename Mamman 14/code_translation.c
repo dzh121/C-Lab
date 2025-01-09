@@ -382,7 +382,7 @@ int parse_and_process_instruction(
                 inst->src_reg = atoi(line + 1);
                 line += 2;
             } else {
-                inst->src_mode = DIRECT;
+                inst->src_mode = UNKNOWN;
                 line = getWord(line, label);
                 strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             }
@@ -415,7 +415,7 @@ int parse_and_process_instruction(
                 inst->dest_reg = atoi(line + 1);
                 line += 2;
             } else {
-                inst->dest_mode = DIRECT;
+                inst->dest_mode = UNKNOWN;
                 line = getWord(line, label);
                 strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             }
