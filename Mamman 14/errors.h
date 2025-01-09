@@ -47,6 +47,10 @@
 #define ERROR_EXTRA_TEXT "Extraneous text after end of command"
 #define ERROR_MISSING_COMMA "Missing comma"
 
+/* Second Pass Errors */
+#define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
+#define ERROR_UNDEFINED_DEST_LABEL "Undefined destination label"
+
 void print_internal_error(char *error_message);
 void print_ext_error(char *error_message, char *file_name, int line_number);
 

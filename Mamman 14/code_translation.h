@@ -4,6 +4,7 @@
 #include "assembler.h"
 #include "errors.h"
 #include "funcs.h"
+#include "tables.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,49 +16,42 @@
 
 /* Macros for error messages with centralized error handling */
 #define EXTRANEOUS_TEXT(ch, file_name, line_number) \
-if (ch) { \
+if (ch && ch != '\0' && !isspace(ch)) { \
 print_ext_error(ERROR_EXTRA_TEXT, file_name, line_number); \
+free(inst); \
 return -1; \
 }
 
 #define MISSING_PARM(ch, file_name, line_number) \
 if (!ch) { \
 print_ext_error(ERROR_MISSING_OPERAND, file_name, line_number); \
+free(inst); \
 return -1; \
 }
 
 #define MISSING_COMMA(ch, file_name, line_number) \
 if (ch != ',') { \
 print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number); \
+free(inst); \
 return -1; \
 }
 
 #define MULTIPLE_COMMA(ch, file_name, line_number) \
 if (ch == ',') { \
 print_ext_error(ERROR_MULTIPLE_COMMA, file_name, line_number); \
+free(inst); \
 return -1; \
 }
 
 typedef enum {
-    IMMEDIATE = 0,
-    DIRECT = 1,
-    RELATIVE = 2,
-    REGISTER_DIRECT = 3,
-    EXTERNAL = 4
+    UNKNOWN = 0,
+    IMMEDIATE = 1,
+    DIRECT = 2,
+    RELATIVE = 3,
+    REGISTER_DIRECT = 4,
+    EXTERNAL = 5
 } AddressingMode;
 
-typedef struct {
-    char *name;       /* Instruction name (e.g., ADD, MOV) */
-    int opcode;       /* Bits 23-18: Operation code */
-    int funct;        /* Bits 7-3: Sub-function code */
-    int src_mode;     /* Bits 17-16: Source addressing mode */
-    int src_reg;      /* Bits 15-13: Source register */
-    int dest_mode;    /* Bits 12-11: Destination addressing mode */
-    int dest_reg;     /* Bits 10-8: Destination register */
-    int are;          /* Bits 2-0: A, R, E bits */
-    char src_label[MAX_LINE_LENGTH]; /* Label name for source operand */
-    char dest_label[MAX_LINE_LENGTH];
-} Instruction;
 
 typedef struct {
     AddressingMode mode;
@@ -87,7 +81,22 @@ unsigned int build_first_word(Instruction *inst, int src_mode, int src_reg, int 
 char *getWord(char *line, char *word);
 int getNum(char* line, int *num, char *file_name, int line_number);
 char *skipSpaces(char *p);
+int process_instruction(
+    char *name,
+    int src_operand,
+    int src_mode,
+    int dest_operand,
+    int dest_mode,
+    char *file_name,
+    int line_number,
+    DataList *data_list,
+    label_table *label_head,
+    int address);
 void test_func();
-void save();
-
+int parse_and_process_instruction(
+    char *line,
+    InstructionList *instruction_list,
+    char *file_name,
+    int line_number
+);
 #endif

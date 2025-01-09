@@ -8,7 +8,6 @@ typedef enum {
     DATA,
     ENTRY,
     EXTERN,
-    UNKNOWN
 } LabelType;
 
 
@@ -35,6 +34,7 @@ typedef struct entry_ext_table {
     struct entry_ext_table *next; /* Pointer to the next node */
 } entry_ext_table;
 
+
 /* Function Prototypes */
 label_table *build_label(char *name, int addr, int line, LabelType type);
 int add_label_list(label_table **head, char *name, int addr, int line, LabelType type, char *file_name);
@@ -44,6 +44,8 @@ void add_address_node(ADDRESS_LIST **head, int addr);
 entry_ext_table *build_entry_ext(char *name, LabelType type);
 int add_entry_ext_list(entry_ext_table **head, char *name, int addr, int IC, LabelType type, char *file_name, int line);
 entry_ext_table *search_entry_ext_list(entry_ext_table *head, char *name);
-
+void init_instruction_list(InstructionList *list);
+void add_instruction(InstructionList *list, Instruction *inst);
+void print_instruction_list(const InstructionList *list);
 
 #endif

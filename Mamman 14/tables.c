@@ -126,3 +126,39 @@ int add_entry_ext_list(entry_ext_table **head, char *name, int addr, int IC, Lab
 
     return 1;
 }
+/* Initialize an empty instruction list */
+void init_instruction_list(InstructionList *list) {
+    list->head = NULL;
+    list->tail = NULL;
+}
+
+/* Add an instruction to the list */
+void add_instruction(InstructionList *list, Instruction *inst) {
+    InstructionNode *new_node = handle_malloc(sizeof(InstructionNode));
+
+    /* Copy the instruction data */
+    memcpy(&new_node->instruction, inst, sizeof(Instruction));
+    new_node->next = NULL;
+    /* Append to the list */
+    if (!list->head) {
+        list->head = new_node;
+        list->tail = new_node;
+    } else {
+        list->tail->next = new_node;
+        list->tail = new_node;
+    }
+}
+
+/* Print the instruction list for debugging */
+void print_instruction_list(const InstructionList *list) {
+    const InstructionNode *current = list->head;
+    printf("\nInstruction List:\n");
+    while (current) {
+        printf("Instruction: %s, Opcode: %d, Funct: %d, Src Mode: %d, Src Reg: %d, Dest Mode: %d, Dest Reg: %d, ARE: %d, Src Label: %s, Dest Label: %s\n",
+               current->instruction.name, current->instruction.opcode, current->instruction.funct,
+               current->instruction.src_mode, current->instruction.src_reg, current->instruction.dest_mode,
+               current->instruction.dest_reg, current->instruction.are, current->instruction.src_label,
+               current->instruction.dest_label);
+        current = current->next;
+    }
+}

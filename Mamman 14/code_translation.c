@@ -1,5 +1,6 @@
 #include "code_translation.h"
 
+
 Instruction operations[] = {
     {"mov", 0, -1, 0, 0, 0, 0, 4},
     {"cmp", 1, -1, 0, 0, 0, 0, 4},
@@ -44,7 +45,8 @@ int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_n
             words++;
         break;
         case REGISTER_DIRECT:
-            break; /* No extra words needed */
+        case UNKNOWN: /* Default to skipping for UNKNOWN */
+            break;/* No extra words needed */
         default:
             print_ext_error(ERROR_INVALID_SOURCE_ADDRESSING_MODE, file_name, line_number);
         break;
@@ -58,7 +60,8 @@ int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_n
             words++;
         break;
         case REGISTER_DIRECT:
-            break; /* No extra words needed */
+        case UNKNOWN: /* Default to skipping for UNKNOWN */
+            break;/* No extra words needed */
         default:
             print_ext_error(ERROR_INVALID_DESTINATION_ADDRESSING_MODE, file_name, line_number);
         break;
@@ -164,19 +167,21 @@ int process_instruction(
     char *file_name,
     int line_number,
     DataList *data_list,
+    label_table *label_head,
     int address) {
-    //TODO: make this do the enitre build for the instruction we will give it the table with the labels
     Instruction *inst; /* Pointer to the instruction */
-    int word_count = 1; /* Start with one word for the first word */
-    unsigned int first_word = 0; /* Encoded first word */
-    unsigned int immediate_word = 0; /* Immediate operand word */
+    int word_count = 1; /* For the first word */
+    unsigned int first_word = 0;
+    unsigned int operand_word = 0;
+    label_table *label;
+    int relative_distance;
+    int original_address = address;
 
     /* Find the Instruction */
     inst = find_operation(name, file_name, line_number);
     if (!inst) {
         return -1; /* Instruction not found, error already reported */
     }
-
 
     /* Build the First Word */
     first_word = build_first_word(
@@ -192,34 +197,75 @@ int process_instruction(
 
     add_data_node(data_list, address++, first_word);
 
+    /* Process Source Operand */
     if (src_mode == IMMEDIATE) {
-        /* Encode Immediate Operand */
-        immediate_word = encode_operand(src_operand, IMMEDIATE, file_name, line_number);
-        add_data_node(data_list, address++, immediate_word);
+        operand_word = encode_operand(src_operand, IMMEDIATE, file_name, line_number);
+        add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (src_mode == DIRECT || src_mode == RELATIVE || src_mode == EXTERNAL) {
-        /* Count a Word for Direct/Relative but Skip Encoding */
-        address++;
+    } else if (src_mode == DIRECT) {
+        label = search_label_list(label_head, inst->src_label); /* Find label */
+        if (!label) {
+            print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
+            return -1;
+        }
+        if (label->type == EXTERN) {
+            operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
+        } else {
+            operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
+        }
+        add_data_node(data_list, address++, operand_word);
+        word_count++;
+    } else if (src_mode == RELATIVE) {
+        label = search_label_list(label_head, inst->dest_label); /* Find label */
+        if (!label) {
+            print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
+            return -1;
+        }
+        /* Calculate relative distance */
+        relative_distance = label->addr - original_address;
+        operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
+        add_data_node(data_list, address++, operand_word);
         word_count++;
     }
 
+    /* Process Destination Operand */
     if (dest_mode == IMMEDIATE) {
-        /* Encode Immediate Operand */
-        immediate_word = encode_operand(dest_operand, IMMEDIATE, file_name, line_number);
-        add_data_node(data_list, address++, immediate_word);
+        operand_word = encode_operand(dest_operand, IMMEDIATE, file_name, line_number);
+        add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (src_mode == DIRECT || src_mode == RELATIVE || src_mode == EXTERNAL) {
-        /* Count a Word for Direct/Relative but Skip Encoding */
-        address++;
+    } else if (dest_mode == DIRECT) {
+        label = search_label_list(label_head, dest_operand); /* Find label */
+        if (!label) {
+            print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
+            return -1;
+        }
+        if (label->type == EXTERN) {
+            operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
+        } else {
+            operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
+        }
+        add_data_node(data_list, address++, operand_word);
+        word_count++;
+    } else if (dest_mode == RELATIVE) {
+        label = search_label_list(label_head, dest_operand); /* Find label */
+        if (!label) {
+            print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
+            return -1;
+        }
+        /* Calculate relative distance */
+        relative_distance = label->addr - original_address;
+        operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
+        add_data_node(data_list, address++, operand_word);
         word_count++;
     }
 
     return word_count; /* Current word count after first word */
 }
 
+
 int parse_and_process_instruction(
     char *line,
-    Instruction **inst,
+    InstructionList *instruction_list,
     char *file_name,
     int line_number
 ) {
@@ -227,27 +273,45 @@ int parse_and_process_instruction(
     char label[MAX_LINE_LENGTH];
     int number_length = 0;
 
+    Instruction *inst = handle_malloc(sizeof(Instruction));
+    if (!inst) {
+        perror("ERROR: Memory allocation failed for Instruction");
+        return -1;
+    }
+
+    Instruction *found_inst;
+
     /* Extract the Instruction Name */
     line = getWord(line, name);
-    *inst = find_operation(name, file_name, line_number);
-    if (!(*inst)) {
-        return -1; /* Instruction not found, error already reported */
+
+    found_inst = find_operation(name, file_name, line_number);
+    if (!found_inst) {
+        printf("ERROR: Instruction '%s' not found at line %d\n", name, line_number);
+        free(inst);
+        return -1;
     }
+
+    memcpy(inst, found_inst, sizeof(Instruction));
+
     if (*line == ',') {
         print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
+        free(inst);
         return -1;
     }
 
     line = skipSpaces(line);
-    memset((*inst)->src_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
-    memset((*inst)->dest_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
 
-    switch ((*inst)->opcode) {
+    memset(inst->src_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
+    memset(inst->dest_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
+    inst->src_mode = UNKNOWN; /* Default to UNKNOWN */
+    inst->dest_mode = UNKNOWN; /* Default to UNKNOWN */
 
+    switch (inst->opcode) {
         /* Instructions with No Operands */
         case 14: /* rts */
         case 15: /* stop */
             EXTRANEOUS_TEXT(*line, file_name, line_number);
+            add_instruction(instruction_list, inst);
             return 0;
 
         /* Instructions with One Operand */
@@ -259,41 +323,41 @@ int parse_and_process_instruction(
 
             if (line[0] == ',') {
                 print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
+                free(inst);
                 return -1;
             }
 
             if (line[0] == '#') {
-                (*inst)->src_mode = IMMEDIATE;
-                number_length = getNum(line + 1, &(*inst)->src_reg, file_name, line_number);
+                inst->src_mode = IMMEDIATE;
+
+                number_length = getNum(line + 1, &inst->src_reg, file_name, line_number);
                 if (number_length == 0) {
+                    free(inst);
                     return -1;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
-                (*inst)->src_mode = RELATIVE;
+                inst->src_mode = RELATIVE;
                 line++;
                 line = getWord(line, label);
-                strncpy((*inst)->src_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             } else if (line[0] == 'r') {
-                (*inst)->src_mode = REGISTER_DIRECT;
+                inst->src_mode = REGISTER_DIRECT;
                 if (!isdigit(line[1])) {
                     print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
+                    free(inst);
                     return -1;
                 }
-                if (atoi(line + 1) < 0 || atoi(line + 1) > MAX_REGISTER) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-                    return -1;
-                }
-                (*inst)->src_reg = atoi(line + 1);
+                inst->src_reg = atoi(line + 1);
                 line += 2;
             } else {
-                (*inst)->src_mode = DIRECT;
+                inst->src_mode = DIRECT;
                 line = getWord(line, label);
-                strncpy((*inst)->src_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             }
-
+            line = skipSpaces(line);
             EXTRANEOUS_TEXT(*line, file_name, line_number);
-            return 0;
+            break;
 
         /* Instructions with Two Operands */
         default:
@@ -301,87 +365,70 @@ int parse_and_process_instruction(
 
             /* Parse Source Operand */
             if (line[0] == '#') {
-                (*inst)->src_mode = IMMEDIATE;
-                number_length = getNum(line + 1, &(*inst)->src_reg, file_name, line_number);
+                inst->src_mode = IMMEDIATE;
+                number_length = getNum(line + 1, &inst->src_reg, file_name, line_number);
                 if (number_length == 0) {
+                    free(inst);
                     return -1;
                 }
                 line += 1 + number_length;
-
             } else if (line[0] == '&') {
-                (*inst)->src_mode = RELATIVE;
+                inst->src_mode = RELATIVE;
                 line++;
                 line = getWord(line, label);
-                strncpy((*inst)->src_label, label, MAX_LINE_LENGTH - 1);
-            }else if (line[0] == 'r') {
-                (*inst)->src_mode = REGISTER_DIRECT;
-                if (!isdigit(line[1])) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-                    return -1;
-                }
-                if (atoi(line + 1) < 0 || atoi(line + 1) > MAX_REGISTER) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-                    return -1;
-                }
-                (*inst)->src_reg = atoi(line + 1);
+                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
+            } else if (line[0] == 'r') {
+                inst->src_mode = REGISTER_DIRECT;
+                inst->src_reg = atoi(line + 1);
                 line += 2;
             } else {
-                (*inst)->src_mode = DIRECT;
+                inst->src_mode = DIRECT;
                 line = getWord(line, label);
-                strncpy((*inst)->src_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             }
 
             if (*line != ',') {
                 print_ext_error(ERROR_MISSING_COMMA, file_name, line_number);
+                free(inst);
                 return -1;
             }
-            line = skipSpaces(line);
-            line++;
-            MULTIPLE_COMMA(line[0], file_name, line_number);
-            line = skipSpaces(line);
-            MISSING_PARM(line[0], file_name, line_number);
+            line = skipSpaces(line + 1);
+
             /* Parse Destination Operand */
+            MISSING_PARM(line[0], file_name, line_number);
+
             if (line[0] == '#') {
-                (*inst)->dest_mode = IMMEDIATE;
-                number_length = getNum(line + 1, &(*inst)->dest_reg, file_name, line_number);
+                inst->dest_mode = IMMEDIATE;
+                number_length = getNum(line + 1, &inst->dest_reg, file_name, line_number);
                 if (number_length == 0) {
+                    free(inst);
                     return -1;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
-                (*inst)->dest_mode = RELATIVE;
+                inst->dest_mode = RELATIVE;
                 line++;
                 line = getWord(line, label);
-                strncpy((*inst)->dest_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             } else if (line[0] == 'r') {
-                (*inst)->dest_mode = REGISTER_DIRECT;
-                if (!isdigit(line[1])) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-                    return -1;
-                }
-                if (atoi(line + 1) < 0 || atoi(line + 1) > MAX_REGISTER) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-                    return -1;
-                }
-                (*inst)->dest_reg = atoi(line + 1);
+                inst->dest_mode = REGISTER_DIRECT;
+                inst->dest_reg = atoi(line + 1);
                 line += 2;
             } else {
-                (*inst)->dest_mode = DIRECT;
+                inst->dest_mode = DIRECT;
                 line = getWord(line, label);
-                strncpy((*inst)->dest_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             }
-        printf("line: %s\n", line);
 
             EXTRANEOUS_TEXT(*line, file_name, line_number);
-            return 0;
+            break;
     }
 
+    add_instruction(instruction_list, inst);
     return 0;
 }
 
-void save() {
 
-}
 char *getWord(char *line, char *word) {
     int i = 0;
 
@@ -391,7 +438,7 @@ char *getWord(char *line, char *word) {
     }
 
     /* Extract word until space, comma, or end of string */
-    while (*line != ' ' && *line != ',' && *line != '\0' && i < MAX_LINE_LENGTH - 1) {
+    while (*line != ' ' && *line != ',' && *line != '\0' && *line != '\n' && i < MAX_LINE_LENGTH - 1) {
         word[i++] = *line++;
     }
     word[i] = '\0'; /* Null-terminate the word */
@@ -399,20 +446,29 @@ char *getWord(char *line, char *word) {
     return line; /* Return pointer to the next part of the string */
 }
 
-int getNum(char* line, int *num, char *file_name, int line_number) {
+int getNum(char *line, int *num, char *file_name, int line_number) {
     char buffer[MAX_LINE_LENGTH] = {0}; /* Buffer to store the number */
     int i = 0;
     int length = 0;
 
+    if (!line || !num) {
+        print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
+        return 0;
+    }
 
-    /* Check if the first character is '-' for negative numbers */
-    if (*line == '-') {
+    /* Skip leading spaces */
+    while (isspace(*line)) {
+        line++;
+    }
+
+    /* Check if the first character is '-' or '+' for negative/positive numbers */
+    if (*line == '-' || *line == '+') {
         buffer[i++] = *line++;
         length++;
     }
 
     /* Parse digits until ',' or end of string */
-    while (*line != ',' && *line != '\0') {
+    while (*line != ',' && *line != '\0' && !isspace(*line)) {
         if (!isdigit(*line)) {
             /* Invalid character in number */
             print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
@@ -424,16 +480,26 @@ int getNum(char* line, int *num, char *file_name, int line_number) {
 
     buffer[i] = '\0'; /* Null-terminate the buffer */
 
-    if (i == 0 || (i == 1 && buffer[0] == '-')) {
-        /* No valid digits after '#' or only a '-' */
+    /* Check if buffer contains only a valid number */
+    if (i == 0 || (i == 1 && (buffer[0] == '-' || buffer[0] == '+'))) {
+        /* No valid digits after sign or empty buffer */
         print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
         return 0; /* Indicate an error occurred */
     }
 
     /* Convert the extracted string to an integer */
-    *num = atoi(buffer);
+    char *endptr;
+    *num = strtol(buffer, &endptr, 10);
+
+    /* Ensure full parsing without leftover characters */
+    if (*endptr != '\0') {
+        print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
+        return 0;
+    }
+
     return length; /* Indicate success */
 }
+
 char *skipSpaces(char *line) {
     while (isspace(*line)) {
         line++;
@@ -454,26 +520,26 @@ void removeSpaces(char *p) {
     }
     *write = '\0'; /* Null-terminate the modified string */
 }
-void test_func(DataList *data_list) {
-    printf("\n=== Testing process_instruction ===\n");
-    char test[] = "clr #2"; // Automatically null-terminated
-    test[sizeof(test) - 1] = '\0';// Explicitly null-terminate (though it already is)
-    Instruction *inst = malloc(sizeof(Instruction));
-    if (!inst) {
-        perror("Failed to allocate memory for Instruction");
-        exit(EXIT_FAILURE);
-    }
-    memset(inst, 0, sizeof(Instruction)); // Initialize all fields to zero/default
-    parse_and_process_instruction(test, &inst, "test", 1);
-    printf("Instruction Details:\n");
-    printf("Name: %s\n", inst->name ? inst->name : "N/A");
-    printf("Opcode: %d\n", inst->opcode);
-    printf("Funct: %d\n", inst->funct);
-    printf("Source Mode: %d\n", inst->src_mode);
-    printf("Source Register: %d\n", inst->src_reg);
-    printf("Source Label: %s\n", inst->src_label[0] ? inst->src_label : "N/A");
-    printf("Destination Mode: %d\n", inst->dest_mode);
-    printf("Destination Register: %d\n", inst->dest_reg);
-    printf("Destination Label: %s\n", inst->dest_label[0] ? inst->dest_label : "N/A");
-    printf("ARE: %d\n", inst->are);
-}
+// void test_func(DataList *data_list) {
+//     printf("\n=== Testing process_instruction ===\n");
+//     char test[] = "clr #2"; // Automatically null-terminated
+//     test[sizeof(test) - 1] = '\0';// Explicitly null-terminate (though it already is)
+//     Instruction *inst = malloc(sizeof(Instruction));
+//     if (!inst) {
+//         perror("Failed to allocate memory for Instruction");
+//         exit(EXIT_FAILURE);
+//     }
+//     memset(inst, 0, sizeof(Instruction)); // Initialize all fields to zero/default
+//     parse_and_process_instruction(test, &inst, "test", 1);
+//     printf("Instruction Details:\n");
+//     printf("Name: %s\n", inst->name ? inst->name : "N/A");
+//     printf("Opcode: %d\n", inst->opcode);
+//     printf("Funct: %d\n", inst->funct);
+//     printf("Source Mode: %d\n", inst->src_mode);
+//     printf("Source Register: %d\n", inst->src_reg);
+//     printf("Source Label: %s\n", inst->src_label[0] ? inst->src_label : "N/A");
+//     printf("Destination Mode: %d\n", inst->dest_mode);
+//     printf("Destination Register: %d\n", inst->dest_reg);
+//     printf("Destination Label: %s\n", inst->dest_label[0] ? inst->dest_label : "N/A");
+//     printf("ARE: %d\n", inst->are);
+// }

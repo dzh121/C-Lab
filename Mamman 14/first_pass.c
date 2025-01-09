@@ -82,12 +82,13 @@ void print_label_list(label_table *label_head) {
     }
 }
 
-int first_pass(char *file_name, DataList *data_list) {
-    int IC = INITIAL_IC, DC = INITIAL_DC, line_count = 0;
+int first_pass(char *file_name, DataList *data_list, InstructionList *instruction_list, label_table **label_head) {
+    int IC = INITIAL_IC, DC = INITIAL_DC, line_count = 0, ICF, DCF;
     FILE *fp;
     char line[MAX_LINE_LENGTH], *after_label, label[MAX_LABEL_SIZE];
     int DID_FAIL = FALSE, label_length;
-    label_table *label_head = NULL;
+    label_table *label_dummy = NULL;
+    Instruction *inst;
 
     if((fp = fopen(file_name, "r")) == NULL){
         print_internal_error(ERROR_FILE_OPEN_SOURCE);
@@ -118,16 +119,10 @@ int first_pass(char *file_name, DataList *data_list) {
         } else {
             after_label = line; /* No label, start from the beginning of the line */
         }
-        // if (after_label) {
-        //     printf("line: %s\n", line);
-        //     printf("label: %s\n", label);
-        //     printf("after_label: %s\n", after_label);
-        // }
 
         if (strncmp(after_label, ".data", 5) == 0) {
             if (label[0] != '\0') {
-                printf("Label32: %s\n", label);
-                add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+                add_label_list(label_head, label, DC, line_count, DATA, file_name);
             }
             if (!encode_data(after_label, &DC, IC, data_list, file_name, line_count)) {
                 DID_FAIL = TRUE;
@@ -135,34 +130,55 @@ int first_pass(char *file_name, DataList *data_list) {
             }
         } else if (strncmp(after_label, ".string", 7) == 0) {
             if (label[0] != '\0') {
-                printf("Label32: %s\n", label);
-                add_label_list(&label_head, label, DC, line_count, DATA, file_name);
+                add_label_list(label_head, label, DC, line_count, DATA, file_name);
             }
             if (!encode_string(after_label, &DC, IC, data_list, file_name, line_count)) {
                 DID_FAIL = TRUE;
                 continue;
             }
         } else if (strncmp(after_label, ".extern", 7) == 0) {
-            //TODO: handel what comes after .extern labael are meaningless
-            // handle_extern(after_label, &label_head, file_name, line_count);
-            /* Process .extern directive */
+            handle_extern(after_label, label_head, file_name, line_count);
         } else if (strncmp(after_label, ".entry", 6) == 0) {
             continue; /* Ignore .entry directive we will address that in second pass*/
         } else {
             if (label[0] != '\0') {
-                printf("Label32: %s\n", label);
-                add_label_list(&label_head, label, IC, line_count, CODE, file_name);
+                add_label_list(label_head, label, IC, line_count, CODE, file_name);
             }
-            //TODO: process instruction
-            /* Process Instruction */
-            IC++;
+
+            if (parse_and_process_instruction(after_label, instruction_list, file_name, line_count) != 0) {
+                DID_FAIL = TRUE;
+                continue;
+            }
+
+            inst = &instruction_list->tail->instruction;
+            IC += calculate_words(inst, inst->src_mode, inst->dest_mode, file_name, line_count);
         }
         memset(label, '\0', sizeof(label));
         // printf("IC: %d, DC: %d\n", IC, DC);
     }
-    print_data_list(data_list);
-    print_label_list(label_head);
-    test_func(data_list);
-
+    if (DID_FAIL)
+    {
+        print_internal_error("First pass failed");
+        return 0;
+    }
+    ICF = IC;
+    DCF = DC;
+    // print_label_list(label_head);
+    printf("ICF: %d, DCF: %d\n", ICF, DCF);
+    /* Update data addresses */
+    label_dummy = *label_head;
+    while (label_dummy != NULL)
+    {
+        if (label_dummy->type == DATA)
+        {
+            label_dummy->addr = label_dummy->addr + ICF;
+        }
+        label_dummy = label_dummy->next;
+    }
+    // print_data_list(data_list);
+    // print_label_list(label_head);
+    // print_instruction_list(instruction_list);
+    // test_func(data_list);
+    fclose(fp);
     return 1;
 }

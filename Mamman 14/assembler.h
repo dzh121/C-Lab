@@ -20,5 +20,27 @@ typedef struct DataNode {
 typedef struct {
     DataNode *head; /* Pointer to the first node */
 } DataList;
+typedef struct {
+    char *name;       /* Instruction name (e.g., ADD, MOV) */
+    int opcode;       /* Bits 23-18: Operation code */
+    int funct;        /* Bits 7-3: Sub-function code */
+    int src_mode;     /* Bits 17-16: Source addressing mode */
+    int src_reg;      /* Bits 15-13: Source register */
+    int dest_mode;    /* Bits 12-11: Destination addressing mode */
+    int dest_reg;     /* Bits 10-8: Destination register */
+    int are;          /* Bits 2-0: A, R, E bits */
+    char src_label[MAX_LINE_LENGTH]; /* Label name for source operand */
+    char dest_label[MAX_LINE_LENGTH];
+} Instruction;
+
+typedef struct InstructionNode {
+    Instruction instruction;       /* The instruction */
+    struct InstructionNode *next; /* Pointer to the next instruction in the list */
+} InstructionNode;
+
+typedef struct {
+    InstructionNode *head; /* Head of the instruction list */
+    InstructionNode *tail; /* Tail of the instruction list for easy append */
+} InstructionList;
 
 #endif //ASSEMBLER_H
