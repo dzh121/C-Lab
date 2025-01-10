@@ -2,11 +2,11 @@
 
 
 Instruction operations[] = {
-    {"mov", 0, -1, 0, 0, 0, 0, 4},
-    {"cmp", 1, -1, 0, 0, 0, 0, 4},
+    {"mov", 0, 0, 0, 0, 0, 0, 4},
+    {"cmp", 1, 0, 0, 0, 0, 0, 4},
     {"add", 2, 1, 0, 0, 0, 0, 4},
     {"sub", 2, 2, 0, 0, 0, 0, 4},
-    {"lea", 4, -1, 0, 0, 0, 0, 4},
+    {"lea", 4, 0, 0, 0, 0, 0, 4},
     {"clr", 5, 1, 0, 0, 0, 0, 4},
     {"not", 5, 2, 0, 0, 0, 0, 4},
     {"inc", 5, 3, 0, 0, 0, 0, 4},
@@ -14,11 +14,11 @@ Instruction operations[] = {
     {"jmp", 9, 1, 0, 0, 0, 0, 4},
     {"bne", 9, 2, 0, 0, 0, 0, 4},
     {"jsr", 9, 3, 0, 0, 0, 0, 4},
-    {"red", 12, -1, 0, 0, 0, 0, 4},
-    {"prn", 13, -1, 0, 0, 0, 0, 4},
-    {"rts", 14, -1, 0, 0, 0, 0, 4},
-    {"stop", 15, -1, 0, 0, 0, 0, 4},
-    {NULL, -1, -1, 0, 0, 0, 0, 0}
+    {"red", 12, 0, 0, 0, 0, 0, 4},
+    {"prn", 13, 0, 0, 0, 0, 0, 4},
+    {"rts", 14, 0, 0, 0, 0, 0, 4},
+    {"stop", 15, 0, 0, 0, 0, 0, 4},
+    {NULL, -1, 0, 0, 0, 0, 0, 0}
 };
 
 Instruction *find_operation(char *name,char *file_name, int line_number) {
@@ -34,11 +34,11 @@ Instruction *find_operation(char *name,char *file_name, int line_number) {
     return NULL;
 }
 
-int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_name, int line_number) {
+int calculate_words(Instruction *inst, char *file_name, int line_number) {
     int words = 1; /* Base instruction word is always present */
 
     /* Calculate additional words for source operand */
-    switch (src_mode) {
+    switch (inst->src_mode) {
         case IMMEDIATE:
         case DIRECT:
         case RELATIVE:
@@ -53,7 +53,7 @@ int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_n
     }
 
     /* Calculate additional words for destination operand */
-    switch (dest_mode) {
+    switch (inst->dest_mode) {
         case IMMEDIATE:
         case DIRECT:
         case RELATIVE:
@@ -70,8 +70,13 @@ int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_n
     return words;
 }
 
-unsigned int build_first_word(Instruction *inst, int src_mode, int src_reg, int dest_mode, int dest_reg, int are, char *file_name, int line_number) {
+unsigned int build_first_word(Instruction *inst, char *file_name, int line_number) {
     unsigned int word = 0;
+    int src_mode_after = inst-> src_mode;
+    int dest_mode_after = inst-> dest_mode;
+    int src_reg_after = inst-> src_operand;
+    int dest_reg_after = inst-> dest_operand;
+
     /* Validate Instruction Pointer */
     if (!inst) {
         print_ext_error(ERROR_NULL_INSTRUCTION, file_name, line_number);
@@ -90,43 +95,66 @@ unsigned int build_first_word(Instruction *inst, int src_mode, int src_reg, int 
         return 0;
     }
 
-    /* Validate Source Addressing Mode (2 bits, 0–3) */
-    if (src_mode < 0 || src_mode > 3) {
+    /* Validate Source Addressing Mode (2 bits, 0–4) */
+    if (inst->src_mode < 0 || inst->src_mode > 4) {
         print_ext_error(ERROR_INVALID_SOURCE_ADDRESSING_MODE, file_name, line_number);
         return 0;
     }
 
-    /* Validate Destination Addressing Mode (2 bits, 0–3) */
-    if (dest_mode < 0 || dest_mode > 3) {
+    /* Validate Destination Addressing Mode (2 bits, 0–4) */
+    if (inst->dest_mode < 0 || inst->dest_mode > 4) {
         print_ext_error(ERROR_INVALID_DESTINATION_ADDRESSING_MODE, file_name, line_number);
         return 0;
     }
 
-    /* Validate Source Register (3 bits, 0–MAX_REGISTER) */
-    if (src_reg < 0 || src_reg > MAX_REGISTER) {
-        print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-        return 0;
-    }
-
-    /* Validate Destination Register (3 bits, 0–MAX_REGISTER) */
-    if (dest_reg < 0 || dest_reg > MAX_REGISTER) {
-        print_ext_error(ERROR_INVALID_DESTINATION_REGISTER, file_name, line_number);
-        return 0;
-    }
-
     /* Validate ARE Bits (3 bits, 0–7) */
-    if (are < 0 || are > 7) {
+    if (inst->are < 0 || inst->are > 7) {
         print_ext_error(ERROR_INVALID_ARE_BITS, file_name, line_number);
         return 0;
     }
-
+    if (inst->src_mode != REGISTER_DIRECT) {
+        src_reg_after = 0;
+    }
+    if (inst->dest_mode != REGISTER_DIRECT) {
+        dest_reg_after = 0;
+    }
+    switch (inst->src_mode)
+    {
+        case IMMEDIATE:
+            src_mode_after = 0;
+            break;
+        case DIRECT:
+            src_mode_after = 1;
+            break;
+        case RELATIVE:
+            src_mode_after = 2;
+            break;
+        case REGISTER_DIRECT:
+            src_mode_after = 3;
+            break;
+    }
+    switch (inst->dest_mode)
+    {
+        case IMMEDIATE:
+            dest_mode_after = 0;
+            break;
+        case DIRECT:
+            dest_mode_after = 1;
+            break;
+        case RELATIVE:
+            dest_mode_after = 2;
+            break;
+        case REGISTER_DIRECT:
+            dest_mode_after = 3;
+            break;
+    }
     word |= (inst->opcode & 0x3F) << 18; /* Opcode (6 bits) */
-    word |= (src_mode & 0x3) << 16;      /* Source Addressing Mode (2 bits) */
-    word |= (src_reg & 0x7) << 13;       /* Source Register (3 bits) */
-    word |= (dest_mode & 0x3) << 11;     /* Destination Addressing Mode (2 bits) */
-    word |= (dest_reg & 0x7) << 8;       /* Destination Register (3 bits) */
+    word |= (src_mode_after & 0x3) << 16;      /* Source Addressing Mode (2 bits) */
+    word |= (src_reg_after & 0x7) << 13;       /* Source Register (3 bits) */
+    word |= (dest_mode_after & 0x3) << 11;     /* Destination Addressing Mode (2 bits) */
+    word |= (dest_reg_after & 0x7) << 8;       /* Destination Register (3 bits) */
     word |= (inst->funct & 0x1F) << 3;   /* Funct (5 bits) */
-    word |= (are & 0x7);                 /* ARE Bits (3 bits) */
+    word |= (4 & 0x7);                 /* ARE Bits (3 bits) */
     return word;
 }
 
@@ -159,17 +187,12 @@ unsigned int encode_operand(int operand, int type, char *file_name, int line_num
 }
 
 int process_instruction(
-    char *name,
-    int src_operand,
-    int src_mode,
-    int dest_operand,
-    int dest_mode,
+    Instruction *inst,
     char *file_name,
     int line_number,
     DataList *data_list,
     label_table *label_head,
     int address) {
-    Instruction *inst; /* Pointer to the instruction */
     int word_count = 1; /* For the first word */
     unsigned int first_word = 0;
     unsigned int operand_word = 0;
@@ -177,20 +200,10 @@ int process_instruction(
     int relative_distance;
     int original_address = address;
 
-    /* Find the Instruction */
-    inst = find_operation(name, file_name, line_number);
-    if (!inst) {
-        return -1; /* Instruction not found, error already reported */
-    }
 
     /* Build the First Word */
     first_word = build_first_word(
         inst,
-        src_mode,
-        (src_mode == REGISTER_DIRECT) ? src_operand : 0, /* Register number if REGISTER_DIRECT */
-        dest_mode,
-        (dest_mode == REGISTER_DIRECT) ? dest_operand : 0, /* Register number if REGISTER_DIRECT */
-        4, /* ARE = A (Absolute) for instruction word */
         file_name,
         line_number
     );
@@ -198,11 +211,11 @@ int process_instruction(
     add_data_node(data_list, address++, first_word);
 
     /* Process Source Operand */
-    if (src_mode == IMMEDIATE) {
-        operand_word = encode_operand(src_operand, IMMEDIATE, file_name, line_number);
+    if (inst->src_mode == IMMEDIATE) {
+        operand_word = encode_operand(inst->src_operand, IMMEDIATE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (src_mode == DIRECT) {
+    } else if (inst->src_mode == DIRECT) {
         label = search_label_list(label_head, inst->src_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
@@ -210,13 +223,16 @@ int process_instruction(
         }
         if (label->type == EXTERN) {
             operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
+            if (label->type == EXTERN) {
+                add_address_to_label(label, address);
+            }
         } else {
             operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
         }
         add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (src_mode == RELATIVE) {
-        label = search_label_list(label_head, inst->dest_label); /* Find label */
+    } else if (inst->src_mode == RELATIVE) {
+        label = search_label_list(label_head, inst->src_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
             return -1;
@@ -229,25 +245,28 @@ int process_instruction(
     }
 
     /* Process Destination Operand */
-    if (dest_mode == IMMEDIATE) {
-        operand_word = encode_operand(dest_operand, IMMEDIATE, file_name, line_number);
+    if (inst->dest_mode == IMMEDIATE) {
+        operand_word = encode_operand(inst->dest_operand, IMMEDIATE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (dest_mode == DIRECT) {
-        label = search_label_list(label_head, dest_operand); /* Find label */
+    } else if (inst->dest_mode == DIRECT) {
+        label = search_label_list(label_head, inst->dest_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
             return -1;
         }
         if (label->type == EXTERN) {
             operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
+            if (label->type == EXTERN) {
+                add_address_to_label(label, address);
+            }
         } else {
             operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
         }
         add_data_node(data_list, address++, operand_word);
         word_count++;
-    } else if (dest_mode == RELATIVE) {
-        label = search_label_list(label_head, dest_operand); /* Find label */
+    } else if (inst->dest_mode == RELATIVE) {
+        label = search_label_list(label_head, inst->dest_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
             return -1;
@@ -258,6 +277,7 @@ int process_instruction(
         add_data_node(data_list, address++, operand_word);
         word_count++;
     }
+
 
     return word_count; /* Current word count after first word */
 }
@@ -305,7 +325,7 @@ int parse_and_process_instruction(
     memset(inst->dest_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
     inst->src_mode = UNKNOWN; /* Default to UNKNOWN */
     inst->dest_mode = UNKNOWN; /* Default to UNKNOWN */
-
+    inst->line_number = line_number;
     switch (inst->opcode) {
         /* Instructions with No Operands */
         case 14: /* rts */
@@ -328,32 +348,32 @@ int parse_and_process_instruction(
             }
 
             if (line[0] == '#') {
-                inst->src_mode = IMMEDIATE;
+                inst->dest_mode = IMMEDIATE;
 
-                number_length = getNum(line + 1, &inst->src_reg, file_name, line_number);
+                number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
                     return -1;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
-                inst->src_mode = RELATIVE;
+                inst->dest_mode = RELATIVE;
                 line++;
                 line = getWord(line, label);
-                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             } else if (line[0] == 'r') {
-                inst->src_mode = REGISTER_DIRECT;
+                inst->dest_mode = REGISTER_DIRECT;
                 if (!isdigit(line[1])) {
                     print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
                     free(inst);
                     return -1;
                 }
-                inst->src_reg = atoi(line + 1);
+                inst->dest_operand = atoi(line + 1);
                 line += 2;
             } else {
-                inst->src_mode = DIRECT;
+                inst->dest_mode = DIRECT;
                 line = getWord(line, label);
-                strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
+                strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             }
             line = skipSpaces(line);
             EXTRANEOUS_TEXT(*line, file_name, line_number);
@@ -366,7 +386,7 @@ int parse_and_process_instruction(
             /* Parse Source Operand */
             if (line[0] == '#') {
                 inst->src_mode = IMMEDIATE;
-                number_length = getNum(line + 1, &inst->src_reg, file_name, line_number);
+                number_length = getNum(line + 1, &inst->src_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
                     return -1;
@@ -379,10 +399,10 @@ int parse_and_process_instruction(
                 strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             } else if (line[0] == 'r') {
                 inst->src_mode = REGISTER_DIRECT;
-                inst->src_reg = atoi(line + 1);
+                inst->src_operand = atoi(line + 1);
                 line += 2;
             } else {
-                inst->src_mode = UNKNOWN;
+                inst->src_mode = DIRECT;
                 line = getWord(line, label);
                 strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
             }
@@ -399,7 +419,7 @@ int parse_and_process_instruction(
 
             if (line[0] == '#') {
                 inst->dest_mode = IMMEDIATE;
-                number_length = getNum(line + 1, &inst->dest_reg, file_name, line_number);
+                number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
                     return -1;
@@ -412,10 +432,10 @@ int parse_and_process_instruction(
                 strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             } else if (line[0] == 'r') {
                 inst->dest_mode = REGISTER_DIRECT;
-                inst->dest_reg = atoi(line + 1);
+                inst->dest_operand = atoi(line + 1);
                 line += 2;
             } else {
-                inst->dest_mode = UNKNOWN;
+                inst->dest_mode = DIRECT;
                 line = getWord(line, label);
                 strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
             }
@@ -520,26 +540,3 @@ void removeSpaces(char *p) {
     }
     *write = '\0'; /* Null-terminate the modified string */
 }
-// void test_func(DataList *data_list) {
-//     printf("\n=== Testing process_instruction ===\n");
-//     char test[] = "clr #2"; // Automatically null-terminated
-//     test[sizeof(test) - 1] = '\0';// Explicitly null-terminate (though it already is)
-//     Instruction *inst = malloc(sizeof(Instruction));
-//     if (!inst) {
-//         perror("Failed to allocate memory for Instruction");
-//         exit(EXIT_FAILURE);
-//     }
-//     memset(inst, 0, sizeof(Instruction)); // Initialize all fields to zero/default
-//     parse_and_process_instruction(test, &inst, "test", 1);
-//     printf("Instruction Details:\n");
-//     printf("Name: %s\n", inst->name ? inst->name : "N/A");
-//     printf("Opcode: %d\n", inst->opcode);
-//     printf("Funct: %d\n", inst->funct);
-//     printf("Source Mode: %d\n", inst->src_mode);
-//     printf("Source Register: %d\n", inst->src_reg);
-//     printf("Source Label: %s\n", inst->src_label[0] ? inst->src_label : "N/A");
-//     printf("Destination Mode: %d\n", inst->dest_mode);
-//     printf("Destination Register: %d\n", inst->dest_reg);
-//     printf("Destination Label: %s\n", inst->dest_label[0] ? inst->dest_label : "N/A");
-//     printf("ARE: %d\n", inst->are);
-// }

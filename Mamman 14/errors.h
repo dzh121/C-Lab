@@ -9,6 +9,7 @@
 /* Memory Handling Errors */
 #define ERROR_MEMORY_ALLOCATION "Memory allocation failed."
 #define ERROR_MEMORY_REALLOCATION "Memory reallocation failed."
+#define ERROR_MEMORY_OVERFLOW "Memory overflow."
 
 /* Macro Handling Errors */
 #define ERROR_MACRO_NAME_DUP "Macro name already exist."
@@ -46,10 +47,13 @@
 #define ERROR_MULTIPLE_COMMA "Multiple consecutive commas"
 #define ERROR_EXTRA_TEXT "Extraneous text after end of command"
 #define ERROR_MISSING_COMMA "Missing comma"
+#define ERROR_MISSING_EXTERNAL_NAME "Missing extern name"
 
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
 #define ERROR_UNDEFINED_DEST_LABEL "Undefined destination label"
+#define ERROR_ENTRY_FAILED "Failed to handle entry"
+#define ERROR_ENTRY_LABEL_NOT_FOUND "Entry label not found"
 
 void print_internal_error(char *error_message);
 void print_ext_error(char *error_message, char *file_name, int line_number);

@@ -41,6 +41,7 @@ label_table *build_label(char *name, int addr, int line, LabelType type) {
     new_label->addr = addr;
     new_label->line = line;
     new_label->type = type;
+    new_label->addr_list = NULL;
     new_label->next = NULL;
 
     return new_label;
@@ -70,62 +71,15 @@ int add_label_list(label_table **head, char *name, int addr, int line, LabelType
     return 1;
 }
 
-
-entry_ext_table *search_entry_ext_list(entry_ext_table *head, char *name) {
-    while (head != NULL) {
-        if (strcmp(head->name, name) == 0) {
-            return head; /* Entry/Extern already exists */
-        }
-        head = head->next;
+void add_address_to_label(label_table *node, int addr) {
+    if (node == NULL) {
+        return; /* Invalid node */
     }
-    return NULL; /* Entry/Extern not found */
+
+    /* Add the address to the addr_list */
+    add_address_node(&node->addr_list, addr);
 }
 
-entry_ext_table *build_entry_ext(char *name, LabelType type) {
-    entry_ext_table *new_entry_ext = (entry_ext_table *)handle_malloc(sizeof(entry_ext_table));
-
-    strcpy(new_entry_ext->name, name);
-    new_entry_ext->addr_list = NULL;
-    new_entry_ext->final_addr = 0;
-    new_entry_ext->type = type;
-    new_entry_ext->next = NULL;
-
-    return new_entry_ext;
-}
-
-
-int add_entry_ext_list(entry_ext_table **head, char *name, int addr, int IC, LabelType type, char *file_name, int line) {
-    entry_ext_table *temp, *new_node;
-
-    temp = search_entry_ext_list(*head, name);
-    if (temp != NULL) {
-        if (type == EXTERN) {
-            add_address_node(&temp->addr_list, IC);
-        } else if (type == ENTRY) {
-            temp->final_addr = addr;
-        }
-        return 1;
-    }
-
-    new_node = build_entry_ext(name, type);
-    if (type == EXTERN) {
-        add_address_node(&new_node->addr_list, IC);
-    } else if (type == ENTRY) {
-        new_node->final_addr = addr;
-    }
-
-    if (*head == NULL) {
-        *head = new_node;
-    } else {
-        temp = *head;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
-        temp->next = new_node;
-    }
-
-    return 1;
-}
 /* Initialize an empty instruction list */
 void init_instruction_list(InstructionList *list) {
     list->head = NULL;
@@ -156,8 +110,8 @@ void print_instruction_list(const InstructionList *list) {
     while (current) {
         printf("Instruction: %s, Opcode: %d, Funct: %d, Src Mode: %d, Src Reg: %d, Dest Mode: %d, Dest Reg: %d, ARE: %d, Src Label: %s, Dest Label: %s\n",
                current->instruction.name, current->instruction.opcode, current->instruction.funct,
-               current->instruction.src_mode, current->instruction.src_reg, current->instruction.dest_mode,
-               current->instruction.dest_reg, current->instruction.are, current->instruction.src_label,
+               current->instruction.src_mode, current->instruction.src_operand, current->instruction.dest_mode,
+               current->instruction.dest_operand, current->instruction.are, current->instruction.src_label,
                current->instruction.dest_label);
         current = current->next;
     }

@@ -59,7 +59,7 @@ typedef struct {
 } Operand;
 
 Instruction *find_operation(char *name,char *file_name, int line_number);
-int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_name, int line_number);
+int calculate_words(Instruction *inst, char *file_name, int line_number);
 
 /*
  * Function: build_first_word
@@ -76,17 +76,13 @@ int calculate_words(Instruction *inst, int src_mode, int dest_mode, char *file_n
  * Returns:
  *   - Encoded 24-bit instruction word as an unsigned int.
  */
-unsigned int build_first_word(Instruction *inst, int src_mode, int src_reg, int dest_mode, int dest_reg, int are, char *file_name, int line_number);
+unsigned int build_first_word(Instruction *inst, char *file_name, int line_number);
 
 char *getWord(char *line, char *word);
 int getNum(char* line, int *num, char *file_name, int line_number);
 char *skipSpaces(char *p);
 int process_instruction(
-    char *name,
-    int src_operand,
-    int src_mode,
-    int dest_operand,
-    int dest_mode,
+    Instruction *inst,
     char *file_name,
     int line_number,
     DataList *data_list,

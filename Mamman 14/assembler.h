@@ -25,12 +25,13 @@ typedef struct {
     int opcode;       /* Bits 23-18: Operation code */
     int funct;        /* Bits 7-3: Sub-function code */
     int src_mode;     /* Bits 17-16: Source addressing mode */
-    int src_reg;      /* Bits 15-13: Source register */
+    int src_operand;      /* Bits 15-13: Source register */
     int dest_mode;    /* Bits 12-11: Destination addressing mode */
-    int dest_reg;     /* Bits 10-8: Destination register */
+    int dest_operand;     /* Bits 10-8: Destination register */
     int are;          /* Bits 2-0: A, R, E bits */
     char src_label[MAX_LINE_LENGTH]; /* Label name for source operand */
     char dest_label[MAX_LINE_LENGTH];
+    int line_number;  /* Line number in the source file */
 } Instruction;
 
 typedef struct InstructionNode {
@@ -43,4 +44,4 @@ typedef struct {
     InstructionNode *tail; /* Tail of the instruction list for easy append */
 } InstructionList;
 
-#endif //ASSEMBLER_H
+#endif
