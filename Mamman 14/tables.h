@@ -7,11 +7,11 @@ typedef enum {
     CODE,
     DATA,
     ENTRY,
-    EXTERN,
+    EXTERN
 } LabelType;
 
 
-typedef struct {
+typedef struct ADDRESS_LIST{
     int addr; /* address */
     struct ADDRESS_LIST *next; /* pointer to the next node */
 } ADDRESS_LIST;
@@ -36,6 +36,6 @@ void add_address_node(ADDRESS_LIST **head, int addr);
 void add_address_to_label(label_table *node, int addr);
 void init_instruction_list(InstructionList *list);
 void add_instruction(InstructionList *list, Instruction *inst);
-void print_instruction_list(const InstructionList *list);
+void print_instruction_list(InstructionList *list);
 
 #endif

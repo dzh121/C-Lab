@@ -2,7 +2,7 @@
 
 #include "code_translation.h"
 
-int handle_entry(char *line, label_table *label_head, const char *file_name, int line_count)
+int handle_entry(char *line, label_table *label_head, char *file_name, int line_count)
 {
 	char *token = strtok(line + 7, " "); /* Skip '.entry' and tokenize */
 	char *after_label;

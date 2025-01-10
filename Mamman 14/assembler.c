@@ -5,14 +5,17 @@
 #include "errors.h"
 #include "first_pass.h"
 #include "second_pass.h"
+#include "funcs.h"
 
 int main(int argc, char *argv[])
 {
     DataList data_list; /* Use an actual DataList structure */
-    init_data_list(&data_list); /* Initialize the data list */
+    InstructionList instruction_list;
     int *ICF = (int *)handle_malloc(sizeof(int));
     int *DCF = (int *)handle_malloc(sizeof(int));
-
+    int i;
+    label_table *label_head = NULL;
+    init_data_list(&data_list);      /* Initialize the data list */
     /*while (argc > 1)
     {
         if (preproc(argv[argc - 1]) == 1)
@@ -28,7 +31,7 @@ int main(int argc, char *argv[])
         argc--;
     }*/
     printf("Starting preproc\n");
-    int i = preproc("test");
+    i = preproc("test");
     if(i != 1)
     {
         print_ext_error(ERROR_PREPROC_FAILED, "test", -1);
@@ -36,9 +39,7 @@ int main(int argc, char *argv[])
     }
     printf("Preproc done\n");
     printf("Starting first pass\n");
-    InstructionList instruction_list;
     init_instruction_list(&instruction_list);
-    label_table *label_head = NULL;
 
     first_pass("test.am", &data_list, &instruction_list, &label_head, ICF, DCF);
     printf("First pass done\n");
@@ -52,5 +53,7 @@ int main(int argc, char *argv[])
     print_label_list(label_head);
     print_instruction_list(&instruction_list);
     print_data_list(&data_list);
+    free(ICF);
+    free(DCF);
     return 0;
 }

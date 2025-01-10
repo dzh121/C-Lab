@@ -104,8 +104,8 @@ void add_instruction(InstructionList *list, Instruction *inst) {
 }
 
 /* Print the instruction list for debugging */
-void print_instruction_list(const InstructionList *list) {
-    const InstructionNode *current = list->head;
+void print_instruction_list(InstructionList *list) {
+    InstructionNode *current = list->head;
     printf("\nInstruction List:\n");
     while (current) {
         printf("Instruction: %s, Opcode: %d, Funct: %d, Src Mode: %d, Src Reg: %d, Dest Mode: %d, Dest Reg: %d, ARE: %d, Src Label: %s, Dest Label: %s\n",

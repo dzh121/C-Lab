@@ -294,12 +294,13 @@ int parse_and_process_instruction(
     int number_length = 0;
 
     Instruction *inst = handle_malloc(sizeof(Instruction));
+    Instruction *found_inst;
+
     if (!inst) {
         perror("ERROR: Memory allocation failed for Instruction");
         return -1;
     }
 
-    Instruction *found_inst;
 
     /* Extract the Instruction Name */
     line = getWord(line, name);
@@ -470,6 +471,7 @@ int getNum(char *line, int *num, char *file_name, int line_number) {
     char buffer[MAX_LINE_LENGTH] = {0}; /* Buffer to store the number */
     int i = 0;
     int length = 0;
+    char *endptr;
 
     if (!line || !num) {
         print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
@@ -508,7 +510,6 @@ int getNum(char *line, int *num, char *file_name, int line_number) {
     }
 
     /* Convert the extracted string to an integer */
-    char *endptr;
     *num = strtol(buffer, &endptr, 10);
 
     /* Ensure full parsing without leftover characters */

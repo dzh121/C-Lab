@@ -6,7 +6,7 @@ typedef struct macro_node {
 	char *name; /* Name of the macro */
 	char *content; /* Content of the macro */
 	int line; /* Line number of the macro */
-	struct node *next; /* Pointer to the next macro */
+	struct macro_node *next; /* Pointer to the next macro */
 } macro_node;
 
 macro_node *build_node(char *name, char *content, int line);

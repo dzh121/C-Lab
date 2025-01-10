@@ -16,4 +16,5 @@ void print_data_list(DataList *list);
 void free_data_list(DataList *list);
 void init_data_list(DataList *list);
 int isValidLabel(char *label);
+int build_output_files(char* file_name, DataList* data_list, label_table* label_head, int ICF, int DCF);
 #endif

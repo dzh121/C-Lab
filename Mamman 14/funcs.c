@@ -62,7 +62,10 @@ void add_data_node(DataList* list, int address, int value)
 	DataNode* new_node = (DataNode*)handle_malloc(sizeof(DataNode));
 
 	new_node->address = address;
-	snprintf(new_node->data, sizeof(new_node->data), "%06x", value & 0xFFFFFF); /* Convert to 6-bit hex */
+
+	/* Convert to a 6-character hex string manually */
+	sprintf(new_node->data, "%06X", value & 0xFFFFFF);
+
 	new_node->next = NULL;
 
 	/* Insert in sorted order by address */
@@ -109,29 +112,24 @@ int isValidLabel(char *label) {
 	char *c;
 
 	if (label == NULL || *label == '\0' || isspace(*label)) {
-		printf("Validation failed: Label is empty or contains only whitespace.\n");
 		return 0; /* Empty label */
 	}
 
 	if (strlen(label) > MAX_LABEL_SIZE) {
-		printf("Validation failed: Label '%s' exceeds maximum length of %d characters.\n", label, MAX_LABEL_SIZE);
 		return 0; /* Too long */
 	}
 
 	if (!isalpha(label[0])) {
-		printf("Validation failed: Label '%s' must start with a letter. Found '%c'.\n", label, label[0]);
 		return 0; /* Must start with a letter */
 	}
 
 	for (c = label; *c != '\0'; c++) {
 		if (!isalnum(*c)) {
-			printf("Validation failed: Label '%s' contains invalid character '%c' at position %ld.\n", label, *c, c - label + 1);
 			return 0; /* Contains invalid character */
 		}
 	}
 
 	if (is_reserved((char *)label)) {
-		printf("Validation failed: Label '%s' is a reserved keyword or directive.\n", label);
 		return 0; /* Reserved keyword */
 	}
 
@@ -144,11 +142,11 @@ int build_output_files(char* file_name, DataList* data_list, label_table* label_
 	char ob_file_name[MAX_LINE_LENGTH], ent_file_name[MAX_LINE_LENGTH], ext_file_name[MAX_LINE_LENGTH];
 	DataNode* current_data = data_list->head;
 	label_table* current_label = label_head;
-	ADDRESS_LIST* current_address;
+	ADDRESS_LIST *current_address = NULL;
 	/* Build the output file names */
-	snprintf(ob_file_name, sizeof(ob_file_name), "%s.ob", file_name);
-	snprintf(ent_file_name, sizeof(ent_file_name), "%s.ent", file_name);
-	snprintf(ext_file_name, sizeof(ext_file_name), "%s.ext", file_name);
+	sprintf(ob_file_name, "%s.ob", file_name);
+	sprintf(ent_file_name, "%s.ent", file_name);
+	sprintf(ext_file_name, "%s.ext", file_name);
 
 	/* Open the output files */
 	ob_fp = fopen(ob_file_name, "w");

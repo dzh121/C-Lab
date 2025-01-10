@@ -2,7 +2,7 @@
 #include "errors.h"
 
 /* Add suffix to a filename dynamically */
-char *add_suffix(const char *file_name, const char *suffix) {
+char *add_suffix(char *file_name, char *suffix) {
     char *new_name = (char *)handle_malloc(strlen(file_name) + strlen(suffix) + 1);
     strcpy(new_name, file_name);
     strcat(new_name, suffix);
@@ -89,7 +89,7 @@ int isValidName(char *name, int line, char *file_name) {
 
     return TRUE;
 }
-void print_hex_string(const char *str) {
+void print_hex_string(char *str) {
     size_t i;
     if (!str) {
         printf("String is NULL\n");

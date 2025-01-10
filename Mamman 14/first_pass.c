@@ -14,7 +14,7 @@ int valid_label(char *label) {
     return 1;
 }
 
-int encode_string(char *line, int *DC, int IC, DataList *data_list, const char *file_name, int line_count) {
+int encode_string(char *line, int *DC, int IC, DataList *data_list, char *file_name, int line_count) {
     char *start, *end;
     start = strchr(line, '"'); /* Find the first quote */
 
@@ -45,7 +45,7 @@ int encode_string(char *line, int *DC, int IC, DataList *data_list, const char *
     return 1; /* Success */
 }
 
-int handle_extern(char *line, label_table **label_head, const char *file_name, int line_count) {
+int handle_extern(char *line, label_table **label_head, char *file_name, int line_count) {
     char *token = strtok(line + 7, " "); /* Skip '.extern' and tokenize */
     char *after_label;
     token[strcspn(token, "\n")] = '\0'; /* Remove newline if present */
@@ -70,7 +70,7 @@ int handle_extern(char *line, label_table **label_head, const char *file_name, i
     return 0;
 }
 
-int encode_data(char *line, int *DC, int IC, DataList *data_list, const char *file_name, int line_count) {
+int encode_data(char *line, int *DC, int IC, DataList *data_list, char *file_name, int line_count) {
     char *token = strtok(line + 5, ", "); /* Skip '.data' and tokenize */
     int value;
 
