@@ -193,7 +193,6 @@ int process_instruction(
     DataList *data_list,
     label_table *label_head,
     int address) {
-    int word_count = 1; /* For the first word */
     unsigned int first_word = 0;
     unsigned int operand_word = 0;
     label_table *label;
@@ -214,7 +213,6 @@ int process_instruction(
     if (inst->src_mode == IMMEDIATE) {
         operand_word = encode_operand(inst->src_operand, IMMEDIATE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     } else if (inst->src_mode == DIRECT) {
         label = search_label_list(label_head, inst->src_label); /* Find label */
         if (!label) {
@@ -230,30 +228,27 @@ int process_instruction(
             operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
         }
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     } else if (inst->src_mode == RELATIVE) {
         label = search_label_list(label_head, inst->src_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
-            return -1;
+            return 0;
         }
         /* Calculate relative distance */
         relative_distance = label->addr - original_address;
         operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     }
 
     /* Process Destination Operand */
     if (inst->dest_mode == IMMEDIATE) {
         operand_word = encode_operand(inst->dest_operand, IMMEDIATE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     } else if (inst->dest_mode == DIRECT) {
         label = search_label_list(label_head, inst->dest_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
-            return -1;
+            return 0;
         }
         if (label->type == EXTERN) {
             operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
@@ -264,22 +259,20 @@ int process_instruction(
             operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
         }
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     } else if (inst->dest_mode == RELATIVE) {
         label = search_label_list(label_head, inst->dest_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
-            return -1;
+            return 0;
         }
         /* Calculate relative distance */
         relative_distance = label->addr - original_address;
         operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
         add_data_node(data_list, address++, operand_word);
-        word_count++;
     }
 
 
-    return word_count; /* Current word count after first word */
+    return 1;
 }
 
 

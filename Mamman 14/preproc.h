@@ -9,7 +9,6 @@
 #include "assembler.h"
 #include "funcs.h"
 
-char *add_suffix(char *file_name, char *suffix);
 void removeSpaces(char *p);
 int preproc(char *file_name);
 #endif

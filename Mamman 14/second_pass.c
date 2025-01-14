@@ -42,6 +42,7 @@ int second_pass(InstructionList *instruction_list, DataList *data_list, label_ta
 	int line_count = 0;
 	InstructionNode *current_inst_node;
 	Instruction *inst;
+	int DID_FAIL = FALSE;
 	int address = 100;
 
 	if((fp = fopen(file_name, "r")) == NULL){
@@ -62,17 +63,25 @@ int second_pass(InstructionList *instruction_list, DataList *data_list, label_ta
 			if (!handle_entry(after_label, label_head, file_name, line_count))
 			{
 				print_ext_error(ERROR_ENTRY_FAILED, file_name, line_count);
+				DID_FAIL = TRUE;
 			}
 		}
 	}
 	current_inst_node = instruction_list->head;
 	while (current_inst_node != NULL) {
 		inst = &current_inst_node->instruction;
-		process_instruction(inst, file_name, inst->line_number, data_list, label_head, address);
+		if (!process_instruction(inst, file_name, inst->line_number, data_list, label_head, address))
+		{
+			DID_FAIL = TRUE;
+		}
 		address += calculate_words(inst, file_name, inst->line_number);
 		current_inst_node = current_inst_node->next;
 	}
 
 	fclose(fp);
-	return 0;
+	if (DID_FAIL)
+	{
+		return 0;
+	}
+	return 1;
 }

@@ -33,13 +33,13 @@ int encode_string(char *line, int *DC, int IC, DataList *data_list, char *file_n
 
     /* Encode each character in the string and add to the data list */
     while (start < end) {
-        add_data_node(data_list, IC + *DC, (int)(*start)); /* Add ASCII value to the list with IC + DC address */
+        add_data_node(data_list, *DC, (int)(*start)); /* Add ASCII value to the list with DC address */
         (*DC)++;
         start++;
     }
 
     /* Add null terminator */
-    add_data_node(data_list, IC + *DC, 0); /* Null terminator is 0 */
+    add_data_node(data_list, *DC, 0); /* Null terminator is 0 */
     (*DC)++;
 
     return 1; /* Success */
@@ -79,7 +79,7 @@ int encode_data(char *line, int *DC, int IC, DataList *data_list, char *file_nam
             return 0; /* Invalid data value */
         }
 
-        add_data_node(data_list, IC + *DC, value); /* Add data value to list with IC + DC address */
+        add_data_node(data_list, *DC, value); /* Add data value to list with DC address */
         (*DC)++;
 
         token = strtok(NULL, ", ");
@@ -104,13 +104,14 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
     char line[MAX_LINE_LENGTH], *after_label, label[MAX_LABEL_SIZE];
     int DID_FAIL = FALSE, label_length;
     label_table *label_dummy = NULL;
+    DataNode *current_data;
     Instruction *inst;
 
     if((fp = fopen(file_name, "r")) == NULL){
         print_internal_error(ERROR_FILE_OPEN_SOURCE);
         return 0;
     }
-
+    memset(label, '\0', sizeof(label));
     while (fgets(line, sizeof(line), fp) != NULL && IC+DC < MAX_MEMORY_SIZE) {
         line_count++;
 
@@ -135,6 +136,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
 
             after_label+=2; /*skip : and space*/
         } else {
+            memset(label, '\0', sizeof(label));
             after_label = line; /* No label, start from the beginning of the line */
         }
 
@@ -155,12 +157,18 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
                 continue;
             }
         } else if (strncmp(after_label, ".extern", 7) == 0) {
+            if (label[0] != '\0' && label[0] != '\n') {
+                print_ext_warning(WARNING_LABEL_AT_START_EXTERN, file_name, line_count);
+            }
             if (!handle_extern(after_label, label_head, file_name, line_count))
             {
                 DID_FAIL = TRUE;
                 continue;
             }
         } else if (strncmp(after_label, ".entry", 6) == 0) {
+            if (label[0] != '\0' && label[0] != '\n') {
+                print_ext_warning(WARNING_LABEL_AT_START_ENTRY, file_name, line_count);
+            }
             continue; /* Ignore .entry directive we will address that in second pass*/
         } else {
             if (label[0] != '\0') {
@@ -184,14 +192,21 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
     }
     if (DID_FAIL)
     {
-        print_internal_error("First pass failed");
         return 0;
     }
     *ICF = IC;
     *DCF = DC;
     /* print_label_list(label_head); */
-    printf("ICF: %d, DCF: %d\n", *ICF, *DCF);
+    /*printf("ICF: %d, DCF: %d\n", *ICF, *DCF); */
     /* Update data addresses */
+
+    current_data = data_list->head;
+    while (current_data != NULL) {
+        current_data->address += *ICF;
+        current_data = current_data->next;
+    }
+
+    /* Update label addresses */
     label_dummy = *label_head;
     while (label_dummy != NULL)
     {

@@ -14,7 +14,11 @@ int is_reserved (char *line);
 void add_data_node(DataList *list, int address, int value);
 void print_data_list(DataList *list);
 void free_data_list(DataList *list);
+void free_label_list(label_table *head);
+void free_instruction_list(InstructionList *list);
+void print_label_list(label_table *label_head);
 void init_data_list(DataList *list);
 int isValidLabel(char *label);
 int build_output_files(char* file_name, DataList* data_list, label_table* label_head, int ICF, int DCF);
+char *add_suffix(char *file_name, char *suffix);
 #endif

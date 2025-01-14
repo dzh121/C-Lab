@@ -1,14 +1,6 @@
 #include "preproc.h"
 #include "errors.h"
 
-/* Add suffix to a filename dynamically */
-char *add_suffix(char *file_name, char *suffix) {
-    char *new_name = (char *)handle_malloc(strlen(file_name) + strlen(suffix) + 1);
-    strcpy(new_name, file_name);
-    strcat(new_name, suffix);
-    return new_name;
-}
-
 /* Remove spaces from a string */
 char *remove_white_spaces(char *line) {
     int i = 0, j = 0;
@@ -129,7 +121,7 @@ int preproc(char *file_name) {
         print_internal_error(ERROR_FILE_OPEN_SOURCE);
         free(file_as);
         free(file_am);
-        return 1;
+        return 0;
     }
 
     /* Open Output File (.am) */
@@ -139,7 +131,7 @@ int preproc(char *file_name) {
         free(file_as);
         free(file_am);
         fclose(fptr_as);
-        return 1;
+        return 0;
     }
 
     memset(macro_name, '\0', sizeof(macro_name));
@@ -262,7 +254,8 @@ int preproc(char *file_name) {
         {
             print_internal_error(ERROR_FAILED_REMOVAL);
         }
+        return 0;
     }
 
-    return DID_FAIL ? FALSE : TRUE;
+    return 1;
 }

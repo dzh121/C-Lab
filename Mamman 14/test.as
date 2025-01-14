@@ -1,10 +1,14 @@
+Hello: .data 3
 .extern W
 .entry LIST
+mcro a_mc
+inc r6
+mov r3, K
+mcroend
 MAIN:   add r3, LIST
 LOOP:   prn #48
         lea W, r6
-        inc r6
-        mov r3, K
+        a_mc
         sub r1, r4
         bne END
         cmp K, #-6
