@@ -18,7 +18,6 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
 int handle_extern(char *line, label_table **label_head, char *file_name, int line_count);
 int encode_data(char *line, int *DC, int IC, DataList *data_list, char *file_name, int line_count);
 int encode_string(char *line, int *DC, int IC, DataList *data_list, char *file_name, int line_count);
-int valid_label(char *label);
 void init_data_list(DataList *list);
 void add_data_node(DataList *list, int address, int data);
 void print_label_list(label_table *label_head);
