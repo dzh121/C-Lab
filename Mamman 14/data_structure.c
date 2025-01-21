@@ -1,10 +1,5 @@
 #include "data_structure.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "funcs.h"
-#include "error.h"
-#include "errors.h"
+
 
 macro_node *build_node(char *name, char *content, int line) {
 	/* Allocate memory for the new node */

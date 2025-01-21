@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "globals.h"
 #include "tables.h"
-#include "assembler.h"
 #include "code_translation.h"
 #include "funcs.h"
 #include "errors.h"

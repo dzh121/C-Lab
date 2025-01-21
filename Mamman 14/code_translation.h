@@ -1,7 +1,7 @@
 #ifndef CODE_TRANSLATION_H
 #define CODE_TRANSLATION_H
 
-#include "assembler.h"
+#include "globals.h"
 #include "errors.h"
 #include "funcs.h"
 #include "tables.h"
@@ -12,7 +12,6 @@
 
 #define MAX_OPCODE 15
 #define MAX_FUNCT 4
-#define MAX_REGISTER 7
 
 /* Macros for error messages with centralized error handling */
 #define EXTRANEOUS_TEXT(ch, file_name, line_number) \
@@ -42,16 +41,6 @@ print_ext_error(ERROR_MULTIPLE_COMMA, file_name, line_number); \
 free(inst); \
 return -1; \
 }
-
-typedef enum {
-    UNKNOWN = 0,
-    IMMEDIATE = 1,
-    DIRECT = 2,
-    RELATIVE = 3,
-    REGISTER_DIRECT = 4,
-    EXTERNAL = 5
-} AddressingMode;
-
 
 typedef struct {
     AddressingMode mode;

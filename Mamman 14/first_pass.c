@@ -175,7 +175,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
                 add_label_list(label_head, label, IC, line_count, CODE, file_name);
             }
 
-            if (parse_and_process_instruction(after_label, instruction_list, file_name, line_count) != 0) {
+            if (!parse_and_process_instruction(after_label, instruction_list, file_name, line_count)) {
                 DID_FAIL = TRUE;
                 continue;
             }
@@ -192,10 +192,15 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
     }
     if (DID_FAIL)
     {
+        if (fp) fclose(fp);
+        if (data_list) free_data_list(data_list);
+        if (*label_head) free_label_list(*label_head);
+        if (instruction_list) free_instruction_list(instruction_list);
         return 0;
     }
     *ICF = IC;
     *DCF = DC;
+
     /* print_label_list(label_head); */
     /*printf("ICF: %d, DCF: %d\n", *ICF, *DCF); */
     /* Update data addresses */
@@ -223,3 +228,4 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
     fclose(fp);
     return 1;
 }
+

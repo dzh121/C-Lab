@@ -291,7 +291,7 @@ int parse_and_process_instruction(
 
     if (!inst) {
         perror("ERROR: Memory allocation failed for Instruction");
-        return -1;
+        return 0;
     }
 
 
@@ -326,7 +326,7 @@ int parse_and_process_instruction(
         case 15: /* stop */
             EXTRANEOUS_TEXT(*line, file_name, line_number);
             add_instruction(instruction_list, inst);
-            return 0;
+            break;
 
         /* Instructions with One Operand */
         case 5: /* clr */
@@ -347,7 +347,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return -1;
+                    return 0;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -360,7 +360,7 @@ int parse_and_process_instruction(
                 if (!isdigit(line[1])) {
                     print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
                     free(inst);
-                    return -1;
+                    return 0;
                 }
                 inst->dest_operand = atoi(line + 1);
                 line += 2;
@@ -383,7 +383,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->src_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return -1;
+                    return 0;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -404,7 +404,7 @@ int parse_and_process_instruction(
             if (*line != ',') {
                 print_ext_error(ERROR_MISSING_COMMA, file_name, line_number);
                 free(inst);
-                return -1;
+                return 0;
             }
             line = skipSpaces(line + 1);
 
@@ -416,7 +416,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return -1;
+                    return 0;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -439,7 +439,8 @@ int parse_and_process_instruction(
     }
 
     add_instruction(instruction_list, inst);
-    return 0;
+    free(inst);
+    return 1;
 }
 
 

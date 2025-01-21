@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "assembler.h"
+#include "globals.h"
 #include "errors.h"
 #include "tables.h"
 

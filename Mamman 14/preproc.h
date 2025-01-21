@@ -1,14 +1,13 @@
 #ifndef PREPROC_H
 #define PREPROC_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include "data_structure.h"
-#include "assembler.h"
+#include "globals.h"
 #include "funcs.h"
+#include "errors.h"
+#include "data_structure.h"
 
-void removeSpaces(char *p);
-int preproc(char *file_name);
-#endif
+int preproc(char *file_as, char* file_am);
+int isValidName(char *name, int line, char *file_name);
+char *remove_white_spaces(char *line);
+
+#endif /* PREPROC_H */

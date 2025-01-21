@@ -1,15 +1,7 @@
 #ifndef TABLES_H
 #define TABLES_H
 
-#include "assembler.h"
-
-typedef enum {
-    CODE,
-    DATA,
-    ENTRY,
-    EXTERN
-} LabelType;
-
+#include "globals.h"
 
 typedef struct ADDRESS_LIST{
     int addr; /* address */

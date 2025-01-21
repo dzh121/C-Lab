@@ -44,7 +44,8 @@ add_executable(mamman14_assembler
         "Mamman 14/code_translation.c"
         "Mamman 14/code_translation.h"
         "Mamman 14/second_pass.c"
-        "Mamman 14/second_pass.h")
+        "Mamman 14/second_pass.h"
+        "Mamman 14/globals.h")
 add_executable(mamman14_tables
         "Mamman 14/tables.c"
         "Mamman 14/tables.h"

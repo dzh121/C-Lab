@@ -1,5 +1,4 @@
 #include "preproc.h"
-#include "errors.h"
 
 /* Remove spaces from a string */
 char *remove_white_spaces(char *line) {
@@ -7,7 +6,9 @@ char *remove_white_spaces(char *line) {
     int inside_quotes = 0; /* Flag to track if we're inside quotation marks */
     char *cleaned_line = (char *)handle_malloc(strlen(line) + 2);  /* +2 for potential '\n' and '\0' */
     int start_of_line = TRUE; /* Flag to track if we're at the start of the line */
-    if (!line) {
+
+    if (!line || strlen(line) == 0) {
+        free(cleaned_line);
         return NULL;
     }
 
@@ -50,6 +51,11 @@ char *remove_white_spaces(char *line) {
         start_of_line = FALSE;
     }
 
+    if (j == 0) {  /* If no characters were added to cleaned_line */
+        free(cleaned_line);
+        return NULL;
+    }
+
     /* Null-terminate the cleaned string */
     cleaned_line[j] = '\0';
 
@@ -59,7 +65,7 @@ char *remove_white_spaces(char *line) {
 int isValidName(char *name, int line, char *file_name) {
     /* Check if the macro name is empty */
     if (!name || name[0] == '\0' || name[0] == '\n') {
-        print_ext_error("Macro name is missing.", file_name, line);
+        print_ext_error(ERROR_MACRO_NO_NAME, file_name, line);
         return FALSE;
     }
 
@@ -81,22 +87,10 @@ int isValidName(char *name, int line, char *file_name) {
 
     return TRUE;
 }
-void print_hex_string(char *str) {
-    size_t i;
-    if (!str) {
-        printf("String is NULL\n");
-        return;
-    }
-    printf("Hexadecimal representation: ");
-    for (i = 0; i < strlen(str); i++) {
-        printf("%02X ", (unsigned char)str[i]);
-    }
-    printf("\n");
-}
+
 /* Preprocessor function to handle macro expansion */
-int preproc(char *file_name) {
+int preproc(char *file_as, char* file_am) {
     FILE *fptr_as, *fptr_am;
-    char *file_am, *file_as;
     char macro_name[MAX_LINE_LENGTH];
     char *macro_content = NULL;
     int line_count = 0, macro_line = 0, content_size = 0, line_length;
@@ -109,11 +103,6 @@ int preproc(char *file_name) {
     char *after_mcroend = NULL;
     char *after_mcroname = NULL;
     int DID_FAIL = FALSE;
-
-
-    /* Add suffixes for source (.as) and macro (.am) files */
-    file_as = add_suffix(file_name, ".as");
-    file_am = add_suffix(file_name, ".am");
 
     /* Open Source File (.as) */
     fptr_as = fopen(file_as, "r");
@@ -146,6 +135,7 @@ int preproc(char *file_name) {
             strncpy(line, cleaned_line, sizeof(line) - 1); /* Copy cleaned content back to line */
             line[sizeof(line) - 1] = '\0'; /* Ensure null-termination */
             free(cleaned_line); /* Free dynamically allocated cleaned line */
+            cleaned_line = NULL; /* Reset pointer to avoid dangling references */
         }
 
         /* Skip empty lines */
@@ -188,6 +178,8 @@ int preproc(char *file_name) {
             }
             /* Add macro to the linked list */
             if (add_node(&head, macro_name, macro_content, macro_line, file_as) != 1) {
+                free(macro_content);
+                macro_content = NULL;
                 DID_FAIL = TRUE;
             }
 
@@ -206,12 +198,16 @@ int preproc(char *file_name) {
             /* Reallocate memory if buffer is too small */
             temp = realloc(macro_content, content_size + line_length);
             if (!temp) {
+                free(macro_content);
+                macro_content = NULL;
                 print_internal_error(ERROR_MEMORY_REALLOCATION);
-                exit(1);
+                DID_FAIL = TRUE;
+                continue;
             }
             macro_content = temp;
             /* Add new line to macro content */
             strcat(macro_content, line);
+            content_size += line_length;
 
             /* If the line does not end with '\n', add it */
             if (line[strlen(line) - 1] != '\n') {
@@ -220,8 +216,6 @@ int preproc(char *file_name) {
             }
 
             macro_content[content_size + line_length] = '\0'; /* Ensure null-termination */
-
-            content_size += line_length;
             continue;
         }
         macro_found = search_list(head, line);
@@ -244,8 +238,6 @@ int preproc(char *file_name) {
 
     fclose(fptr_as);
     fclose(fptr_am);
-    free(file_as);
-    free(file_am);
     free_macro_list(head);
 
     if (DID_FAIL)

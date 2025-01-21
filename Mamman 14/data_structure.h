@@ -1,6 +1,13 @@
 #ifndef DATA_STRUCTURE_H
 #define DATA_STRUCTURE_H
 
+#include "globals.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "funcs.h"
+#include "errors.h"
+
 /* Linked list */
 typedef struct macro_node {
 	char *name; /* Name of the macro */

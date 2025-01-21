@@ -1,7 +1,7 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
-#include "assembler.h"
+#include "globals.h"
 #include <stdio.h>
 
 /* File Handling Errors */
