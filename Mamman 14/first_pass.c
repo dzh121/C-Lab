@@ -1,7 +1,4 @@
 #include "first_pass.h"
-#include "errors.h"
-#include <string.h>
-#include "tables.h"
 
 int encode_string(char *line, int *DC, int IC, DataList *data_list, char *file_name, int line_count) {
     char *start, *end;
@@ -172,7 +169,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
                 add_label_list(label_head, label, IC, line_count, CODE, file_name);
             }
 
-            if (parse_and_process_instruction(after_label, instruction_list, file_name, line_count) != 0) {
+            if (!parse_and_process_instruction(after_label, instruction_list, file_name, line_count)) {
                 did_fail = TRUE;
                 continue;
             }

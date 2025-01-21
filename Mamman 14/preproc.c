@@ -50,12 +50,6 @@ char *remove_white_spaces(char *line) {
         cleaned_line[j++] = line[i++];
         start_of_line = FALSE;
     }
-
-    if (j == 0) {  /* If no characters were added to cleaned_line */
-        free(cleaned_line);
-        return NULL;
-    }
-
     /* Null-terminate the cleaned string */
     cleaned_line[j] = '\0';
 
@@ -231,7 +225,7 @@ int preproc(char *file_as, char* file_am) {
         fputs("\n", fptr_am);
     }
     if (line_count == 0) {
-        print_ext_error(ERROR_EMPTY_FILE, file_name, 0);
+        print_ext_error(ERROR_EMPTY_FILE, file_as, 0);
         did_fail = TRUE;
     }
     /* Check if macro was left open without mcroend */
