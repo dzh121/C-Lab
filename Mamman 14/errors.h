@@ -24,6 +24,8 @@
 #define ERROR_EXTRANEOUS_TEXT_MCROEND "Extraneous text after 'mcroend'"
 #define ERROR_EXTRANEOUS_TEXT_MCRONAME "Extraneous text after macro name"
 #define ERROR_PREPROC_FAILED "Preprocessor failed"
+#define ERROR_EMPTY_FILE "Empty file"
+
 /* First Pass Errors */
 #define ERROR_LABEL_TOO_LONG "Label is too long"
 #define ERROR_LABEL_INVALID "Label is invalid"
@@ -52,7 +54,7 @@
 #define ERROR_EXTRA_TEXT "Extraneous text after end of command"
 #define ERROR_MISSING_COMMA "Missing comma"
 #define ERROR_MISSING_EXTERNAL_NAME "Missing extern name"
-
+#define ERROR_STRING_MISSING_QUOTES "Missing quotes in string"
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
 #define ERROR_UNDEFINED_DEST_LABEL "Undefined destination label"

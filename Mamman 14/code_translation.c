@@ -217,13 +217,11 @@ int process_instruction(
         label = search_label_list(label_head, inst->src_label); /* Find label */
         if (!label) {
             print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
-            return -1;
+            return 0;
         }
         if (label->type == EXTERN) {
             operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
-            if (label->type == EXTERN) {
-                add_address_to_label(label, address);
-            }
+            add_address_to_label(label, address);
         } else {
             operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
         }

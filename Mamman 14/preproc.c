@@ -102,7 +102,7 @@ int preproc(char *file_as, char* file_am) {
     char *temp = NULL;
     char *after_mcroend = NULL;
     char *after_mcroname = NULL;
-    int DID_FAIL = FALSE;
+    int did_fail = FALSE;
 
     /* Open Source File (.as) */
     fptr_as = fopen(file_as, "r");
@@ -154,13 +154,13 @@ int preproc(char *file_as, char* file_am) {
 
             if (after_mcroname[0] != '\0' && after_mcroname[0] != '\n') {
                 print_ext_error(ERROR_EXTRANEOUS_TEXT_MCRONAME, file_as, line_count);
-                DID_FAIL = TRUE;
+                did_fail = TRUE;
             }
 
             macro_name[MAX_LINE_LENGTH - 1] = '\0'; /* Ensure null-termination */
             if (!isValidName(macro_name, macro_line, file_as))
             {
-                DID_FAIL = TRUE;
+                did_fail = TRUE;
             }
 
             /* Allocate initial memory for macro content */
@@ -174,13 +174,14 @@ int preproc(char *file_as, char* file_am) {
             after_mcroend = line + 7;
             if (after_mcroend[0] != '\0' && after_mcroend[0] != '\n') {
                 print_ext_error(ERROR_EXTRANEOUS_TEXT_MCROEND, file_as, line_count);
-                DID_FAIL = TRUE;
+                did_fail = TRUE;
             }
             /* Add macro to the linked list */
             if (add_node(&head, macro_name, macro_content, macro_line, file_as) != 1) {
+                did_fail = TRUE;
                 free(macro_content);
                 macro_content = NULL;
-                DID_FAIL = TRUE;
+                did_fail = TRUE;
             }
 
             /* Free macro_name and macro_content after adding */
@@ -201,7 +202,7 @@ int preproc(char *file_as, char* file_am) {
                 free(macro_content);
                 macro_content = NULL;
                 print_internal_error(ERROR_MEMORY_REALLOCATION);
-                DID_FAIL = TRUE;
+                did_fail = TRUE;
                 continue;
             }
             macro_content = temp;
@@ -229,18 +230,21 @@ int preproc(char *file_as, char* file_am) {
         fputs(line, fptr_am);
         fputs("\n", fptr_am);
     }
-
+    if (line_count == 0) {
+        print_ext_error(ERROR_EMPTY_FILE, file_name, 0);
+        did_fail = TRUE;
+    }
     /* Check if macro was left open without mcroend */
     if (in_macro) {
         print_ext_error(ERROR_MACRO_NOT_CLOSED, file_as, macro_line);
-        DID_FAIL = TRUE;
+        did_fail = TRUE;
     }
 
     fclose(fptr_as);
     fclose(fptr_am);
     free_macro_list(head);
 
-    if (DID_FAIL)
+    if (did_fail)
     {
         if (remove(file_am) != 0)
         {
