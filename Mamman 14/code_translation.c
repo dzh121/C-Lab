@@ -21,7 +21,7 @@ Instruction operations[] = {
     {NULL, -1, 0, 0, 0, 0, 0, 0}
 };
 
-Instruction *find_operation(char *name,char *file_name, int line_number) {
+Instruction *find_operation(char *name) {
     int i; /* Loop index */
 
     for (i = 0; operations[i].name != NULL; i++) {
@@ -29,8 +29,6 @@ Instruction *find_operation(char *name,char *file_name, int line_number) {
             return &operations[i];
         }
     }
-
-    print_ext_error(ERROR_INSTRUCTION_NOT_FOUND, file_name, line_number);
     return NULL;
 }
 
@@ -269,7 +267,6 @@ int process_instruction(
         add_data_node(data_list, address++, operand_word);
     }
 
-
     return 1;
 }
 
@@ -287,20 +284,14 @@ int parse_and_process_instruction(
     Instruction *inst = handle_malloc(sizeof(Instruction));
     Instruction *found_inst;
 
-    if (!inst) {
-        perror("ERROR: Memory allocation failed for Instruction");
-        return 0;
-    }
-
-
     /* Extract the Instruction Name */
     line = getWord(line, name);
 
-    found_inst = find_operation(name, file_name, line_number);
+    found_inst = find_operation(name);
     if (!found_inst) {
-        printf("ERROR: Instruction '%s' not found at line %d\n", name, line_number);
+        print_ext_error(ERROR_INSTRUCTION_NOT_FOUND, file_name, line_number);
         free(inst);
-        return -1;
+        return 0;
     }
 
     memcpy(inst, found_inst, sizeof(Instruction));
@@ -308,7 +299,7 @@ int parse_and_process_instruction(
     if (*line == ',') {
         print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
         free(inst);
-        return -1;
+        return 0;
     }
 
     line = skipSpaces(line);
@@ -323,7 +314,6 @@ int parse_and_process_instruction(
         case 14: /* rts */
         case 15: /* stop */
             EXTRANEOUS_TEXT(*line, file_name, line_number);
-            add_instruction(instruction_list, inst);
             break;
 
         /* Instructions with One Operand */
@@ -336,7 +326,7 @@ int parse_and_process_instruction(
             if (line[0] == ',') {
                 print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
                 free(inst);
-                return -1;
+                return 0;
             }
 
             if (line[0] == '#') {

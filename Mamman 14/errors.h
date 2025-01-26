@@ -25,7 +25,7 @@
 #define ERROR_EXTRANEOUS_TEXT_MCRONAME "Extraneous text after macro name"
 #define ERROR_PREPROC_FAILED "Preprocessor failed"
 #define ERROR_EMPTY_FILE "Empty file"
-
+#define ERROR_MACRO_NOT_OPENED "Macro not opened"
 /* First Pass Errors */
 #define ERROR_LABEL_TOO_LONG "Label is too long"
 #define ERROR_LABEL_INVALID "Label is invalid"

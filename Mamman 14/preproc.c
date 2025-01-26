@@ -2,55 +2,50 @@
 
 /* Remove spaces from a string */
 char *remove_white_spaces(char *line) {
-    int i = 0, j = 0;
-    int inside_quotes = 0; /* Flag to track if we're inside quotation marks */
-    char *cleaned_line = (char *)handle_malloc(strlen(line) + 2);  /* +2 for potential '\n' and '\0' */
-    int start_of_line = TRUE; /* Flag to track if we're at the start of the line */
+    int i = 0, j = 0, inside_quotes = 0; /* Indexes and flags */
+    char *cleaned_line; /* Cleaned line buffer */
 
-    if (!line || strlen(line) == 0) {
-        free(cleaned_line);
-        return NULL;
-    }
+    if (!line || strlen(line) == 0) return NULL; /* Handle empty line */
+
+    cleaned_line = (char *)handle_malloc(strlen(line) + 1); /* Allocate memory for the cleaned line */
 
     while (line[i] != '\0') {
-        /* Handle comments (terminate at ';') */
-        if (line[i] == ';' && !inside_quotes) {
-            cleaned_line[j++] = '\0'; /* Add newline */
-            break; /* Ignore everything after ';' */
-        }
+        /* Stop processing at ';' if not inside quotes */
+        if (line[i] == ';' && !inside_quotes) break;
 
-        /* Handle quotation marks */
+        /* Toggle quote flag if encountering a quote */
         if (line[i] == '"') {
-            inside_quotes = !inside_quotes; /* Toggle the flag */
+            inside_quotes = !inside_quotes;
             cleaned_line[j++] = line[i++];
-            start_of_line = FALSE;
             continue;
         }
 
+        /* Handle non-space characters or characters inside quotes */
+        if (!isspace(line[i]) || inside_quotes) {
+            cleaned_line[j++] = line[i++];
+        }
+        /* Handle spaces outside quotes */
+        else if (j > 0 && !isspace(cleaned_line[j - 1])) {
+            cleaned_line[j++] = ' '; /* Add a single space */
+            while (isspace(line[i])) i++; /* Skip consecutive spaces */
+        }
         /* Skip leading spaces */
-        if (start_of_line && isspace(line[i])) {
-            i++; /* Skip leading spaces */
-            continue;
+        else {
+            i++;
         }
-
-        /* Handle spaces and tabs */
-        if (isspace(line[i]) && !inside_quotes) {
-            /* Skip consecutive spaces/tabs */
-            while (isspace(line[i])) {
-                i++;
-            }
-            if (line[i] != '\0' && line[i] != ';') {
-                cleaned_line[j++] = ' '; /* Add a single space */
-            }
-            start_of_line = FALSE;
-            continue;
-        }
-
-        /* Copy regular characters */
-        cleaned_line[j++] = line[i++];
-        start_of_line = FALSE;
     }
-    /* Null-terminate the cleaned string */
+
+    /* Remove trailing spaces */
+    while (j > 0 && (cleaned_line[j - 1] == ' ' || cleaned_line[j - 1] == '\r')) {
+        j--;
+    }
+    if (j < 0) {
+        j = 0; /* Prevent negative index */
+    }
+    cleaned_line[j] = '\0';
+
+
+    /* Null-terminate the cleaned line */
     cleaned_line[j] = '\0';
 
     return cleaned_line;
@@ -68,35 +63,32 @@ int isValidName(char *name, int line, char *file_name) {
         print_ext_error(ERROR_MACRO_TOO_LONG, file_name, line);
         return FALSE;
     }
+
     /* Check if the macro name is invalid */
-    if(isdigit(name[0])){
+    if (isdigit(name[0])) {
         print_ext_error(ERROR_MACRO_NAME_INVALID, file_name, line);
         return FALSE;
     }
+
     /* Check if the macro name is reserved */
-    if(is_reserved(name)){
+    if (is_reserved(name)) {
         print_ext_error(ERROR_MACRO_NAME_RESERVED, file_name, line);
         return FALSE;
     }
 
-    return TRUE;
+    return TRUE; /* Valid name */
 }
 
 /* Preprocessor function to handle macro expansion */
-int preproc(char *file_as, char* file_am) {
-    FILE *fptr_as, *fptr_am;
-    char macro_name[MAX_LINE_LENGTH];
-    char *macro_content = NULL;
-    int line_count = 0, macro_line = 0, content_size = 0, line_length;
-    char line[MAX_LINE_LENGTH];
-    macro_node *head = NULL;
-    int in_macro = 0; /* Flag for macro block detection */
-    macro_node *macro_found = NULL;
-    char *cleaned_line = NULL;
-    char *temp = NULL;
-    char *after_mcroend = NULL;
-    char *after_mcroname = NULL;
-    int did_fail = FALSE;
+int preproc(char *file_as, char *file_am) {
+    FILE *fptr_as, *fptr_am; /* File pointers for source and output files */
+    char macro_name[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH]; /* Buffers for macro name and line */
+    char *macro_content = NULL, *cleaned_line = NULL, *temp = NULL; /* Pointers for dynamic content and temporary values */
+    char *after_mcroend = NULL, *after_mcroname = NULL; /* Pointers for text after 'mcroend' and macro name */
+    int line_count = 0, macro_line = 0, content_size = 0, line_length = 0; /* Counters and sizes */
+    int in_macro = 0, did_fail = FALSE; /* Flags for macro detection and error handling */
+    macro_node *head = NULL, *macro_found = NULL; /* Linked list head and macro search result */
+
 
     /* Open Source File (.as) */
     fptr_as = fopen(file_as, "r");
@@ -117,14 +109,16 @@ int preproc(char *file_as, char* file_am) {
         return 0;
     }
 
+    /* Initialize buffers */
     memset(macro_name, '\0', sizeof(macro_name));
-    memset(line , '\0', sizeof(line));
+    memset(line, '\0', sizeof(line));
 
     /* Read and Parse Lines */
     while (fgets(line, sizeof(line), fptr_as) != NULL) {
-        line_count++;
+        line_count++; /* Increment line counter */
 
         cleaned_line = remove_white_spaces(line); /* Clean the line */
+
         if (cleaned_line) {
             strncpy(line, cleaned_line, sizeof(line) - 1); /* Copy cleaned content back to line */
             line[sizeof(line) - 1] = '\0'; /* Ensure null-termination */
@@ -138,10 +132,10 @@ int preproc(char *file_as, char* file_am) {
         }
 
         /* Detect macro declaration */
-        if (strncmp(line, "mcro", 4) == 0 && strncmp(line, "mcroend", 7) != 0) {
-            in_macro = 1;
-            macro_line = line_count;
-
+        if (strncmp(line, "mcro", 4) == 0 && (line[4] == '\0' || isspace(line[4]))) {
+            printf("here\n");
+            in_macro = 1; /* Set flag to indicate we are inside a macro */
+            macro_line = line_count; /* Save the line number for error messages */
             /* Extract macro name */
             sscanf(line + 4, "%s", macro_name);
             after_mcroname = line + 5 + strlen(macro_name); /* Skip 'mcro' and the name and the space*/
@@ -163,13 +157,21 @@ int preproc(char *file_as, char* file_am) {
             content_size = 1;
             continue;
         }
-        if (strncmp(line, "mcroend", 7) == 0) {
-            in_macro = 0;
+        if (strncmp(line, "mcroend", 7) == 0 && (line[7] == '\0' || isspace(line[7]))) {
+            if (!in_macro) {
+                print_ext_error(ERROR_MACRO_NOT_OPENED, file_as, line_count);
+                did_fail = TRUE;
+                continue;
+            }
+            in_macro = 0; /* Exit macro definition mode */
             after_mcroend = line + 7;
-            if (after_mcroend[0] != '\0' && after_mcroend[0] != '\n') {
+
+            /* Check for extraneous text after 'mcroend' */
+            if (*after_mcroend != '\0' && *after_mcroend != '\n') {
                 print_ext_error(ERROR_EXTRANEOUS_TEXT_MCROEND, file_as, line_count);
                 did_fail = TRUE;
             }
+
             /* Add macro to the linked list */
             if (add_node(&head, macro_name, macro_content, macro_line, file_as) != 1) {
                 did_fail = TRUE;
@@ -184,14 +186,11 @@ int preproc(char *file_as, char* file_am) {
             macro_content = NULL;
             content_size = 0;
             continue;
-        }
-
-        /* Handle macro content dynamically */
-        if (in_macro) {
-            line_length = (int) strlen(line) + 2; /* +2 for '\n' and null terminator */
-
+        }if (in_macro) {
+            line_length = (int) strlen(line) + 1; /* +1 for null terminator */
+            printf("line_length: %d\n", line_length);
             /* Reallocate memory if buffer is too small */
-            temp = realloc(macro_content, content_size + line_length);
+            temp = realloc(macro_content, content_size + line_length + 1);
             if (!temp) {
                 free(macro_content);
                 macro_content = NULL;
@@ -200,33 +199,37 @@ int preproc(char *file_as, char* file_am) {
                 continue;
             }
             macro_content = temp;
+
             /* Add new line to macro content */
-            strcat(macro_content, line);
+            strncat(macro_content, line, line_length);
             content_size += line_length;
 
             /* If the line does not end with '\n', add it */
             if (line[strlen(line) - 1] != '\n') {
-                strcat(macro_content, "\n");
-                content_size += 1; /* Account for added newline */
+                strncat(macro_content, "\n", 1);
+                content_size += 1;
             }
 
-            macro_content[content_size + line_length] = '\0'; /* Ensure null-termination */
+            /* Ensure null-termination */
+            macro_content[content_size] = '\0';
             continue;
         }
-        macro_found = search_list(head, line);
+
+
+        macro_found = search_list(head, line); /* Search for macro in the list */
 
         if (macro_found != NULL) {
-            fputs(macro_found->content, fptr_am);
+            fputs(macro_found->content, fptr_am); /* Write macro content to the output file */
             continue;
         }
 
         /* Write regular lines to the output file */
-        fputs(line, fptr_am);
-        fputs("\n", fptr_am);
+        fputs(line, fptr_am); /* Write the line to the output file */
+        fputs("\n", fptr_am); /* Add a newline */
     }
     if (line_count == 0) {
-        print_ext_error(ERROR_EMPTY_FILE, file_as, 0);
-        did_fail = TRUE;
+        print_ext_error(ERROR_EMPTY_FILE, file_as, 0); /* Handle empty file */
+        did_fail = TRUE; /* Set failure flag */
     }
     /* Check if macro was left open without mcroend */
     if (in_macro) {
@@ -234,18 +237,18 @@ int preproc(char *file_as, char* file_am) {
         did_fail = TRUE;
     }
 
+    /* Free memory and close files */
     fclose(fptr_as);
     fclose(fptr_am);
     free_macro_list(head);
 
-    if (did_fail)
-    {
-        if (remove(file_am) != 0)
-        {
+    /* Remove output file if an error occurred */
+    if (did_fail) {
+        if (remove(file_am) != 0) {
             print_internal_error(ERROR_FAILED_REMOVAL);
         }
         return 0;
     }
 
-    return 1;
+    return 1; /* Success */
 }

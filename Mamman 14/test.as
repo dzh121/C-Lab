@@ -1,14 +1,17 @@
-Hello: .data 3
-.extern W
-.entry LIST
+;file test.as
 mcro a_mc
-inc r6
-mov r3, K
+add r1, r2
+sub r2, r3
 mcroend
+
+.entry LIST
+.extern W
 MAIN:   add r3, LIST
 LOOP:   prn #48
         lea W, r6
+        inc r6
         a_mc
+        mov r3, K
         sub r1, r4
         bne END
         cmp K, #-6
@@ -18,7 +21,6 @@ LOOP:   prn #48
         jmp &LOOP
         add L3, L3
 END:    stop
-
 STR:    .string "abcd"
 LIST:   .data 6, -9
         .data -100

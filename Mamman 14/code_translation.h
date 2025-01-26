@@ -47,7 +47,7 @@ typedef struct {
     int value;
 } Operand;
 
-Instruction *find_operation(char *name,char *file_name, int line_number);
+Instruction *find_operation(char *name);
 int calculate_words(Instruction *inst, char *file_name, int line_number);
 
 /*
