@@ -1,51 +1,5 @@
 #include "funcs.h"
-#include <windows.h>
-#include <psapi.h>
 
-void check_system_memory() {
-	MEMORYSTATUSEX statex;
-	PROCESS_MEMORY_COUNTERS pmc;
-
-	statex.dwLength = sizeof(statex);
-
-	if (GlobalMemoryStatusEx(&statex)) {
-		printf("System Memory Status:\n");
-		printf("Memory Load: %ld%%\n", statex.dwMemoryLoad);
-		printf("Total Physical Memory: %llu MB\n", statex.ullTotalPhys / (1024 * 1024));
-		printf("Available Physical Memory: %llu MB\n", statex.ullAvailPhys / (1024 * 1024));
-		printf("Total Virtual Memory: %llu MB\n", statex.ullTotalVirtual / (1024 * 1024));
-		printf("Available Virtual Memory: %llu MB\n", statex.ullAvailVirtual / (1024 * 1024));
-	}
-
-	if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
-		printf("\nProcess Memory Information:\n");
-		printf("Working Set Size: %llu KB\n", pmc.WorkingSetSize / 1024);
-		printf("Peak Working Set Size: %llu KB\n", pmc.PeakWorkingSetSize / 1024);
-		printf("Page File Usage: %llu KB\n", pmc.PagefileUsage / 1024);
-		printf("Peak Page File Usage: %llu KB\n", pmc.PeakPagefileUsage / 1024);
-	}
-}
-
-// Simple heap validation function
-void validate_heap() {
-	int heapstatus = _heapchk();
-	switch (heapstatus) {
-		case _HEAPOK:
-			printf("Heap is OK\n");
-		break;
-		case _HEAPEMPTY:
-			printf("Heap is empty\n");
-		break;
-		case _HEAPBADBEGIN:
-			printf("Bad heap start\n");
-		break;
-		case _HEAPBADNODE:
-			printf("Bad heap node\n");
-		break;
-		default:
-			printf("Unknown heap status\n");
-	}
-}
 const char* registers[] = {
 	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"
 };
@@ -66,6 +20,7 @@ void* handle_malloc(long size)
 	}
 	return ptr;
 }
+
 int is_reserved(char* line)
 {
 	int i;
