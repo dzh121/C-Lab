@@ -42,8 +42,6 @@ char *remove_white_spaces(char *line) {
     if (j < 0) {
         j = 0; /* Prevent negative index */
     }
-    cleaned_line[j] = '\0';
-
 
     /* Null-terminate the cleaned line */
     cleaned_line[j] = '\0';
