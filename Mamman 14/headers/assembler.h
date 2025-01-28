@@ -2,13 +2,13 @@
 #define ASSEMBLER_H
 
 #include "globals.h"
-#include <stdlib.h>
-#include <stdio.h>
 #include "preproc.h"
 #include "errors.h"
 #include "first_pass.h"
 #include "second_pass.h"
 #include "funcs.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 /**
  * @brief Assembles the input assembly file/s.
@@ -19,7 +19,7 @@
  *
  * @param argc The number of command line arguments.
  * @param argv An array of command line argument strings.
- * @return int Returns 1 on success, or 0 on failure.
+ * @return int Returns 0 on success, or 1 on failure.
  */
 int main(int argc, char *argv[]);
 

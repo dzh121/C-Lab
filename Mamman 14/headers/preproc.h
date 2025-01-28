@@ -17,9 +17,9 @@
  *
  * @param file_as The path to the input assembly file (.as).
  * @param file_am The path to the output preprocessed file (.am).
- * @return int Returns 1 on success, or 0 on failure.
+ * @return int Returns 0 on success, or 1 on failure.
  */
-int preproc(char *file_as, char* file_am);
+int preproc(char* file_as, char* file_am);
 
 /**
  * @brief Checks if a macro name is valid.
@@ -32,7 +32,7 @@ int preproc(char *file_as, char* file_am);
  * @param file_name The name of the file being processed (for error reporting).
  * @return int Returns 1 if the name is valid, or 0 if it is invalid.
  */
-int isValidName(char *name, int line, char *file_name);
+int isValidName(char* name, int line, char* file_name);
 
 /**
  * @brief Removes unnecessary spaces and comments from a line.
@@ -45,6 +45,6 @@ int isValidName(char *name, int line, char *file_name);
  * @return char* A dynamically allocated string containing the cleaned line.
  *               Returns NULL if the input line is empty.
  */
-char *remove_white_spaces(char *line);
+char* remove_white_spaces(char* line);
 
 #endif /* PREPROC_H */

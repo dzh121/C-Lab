@@ -1,7 +1,4 @@
-#include "tables.h"
-#include "funcs.h"
-#include "string.h"
-#include "errors.h"
+#include "../headers/tables.h"
 
 ADDRESS_LIST *build_address_node(int addr) {
     ADDRESS_LIST *node = (ADDRESS_LIST *)handle_malloc(sizeof(ADDRESS_LIST));
@@ -54,7 +51,7 @@ int add_label_list(label_table **head, char *name, int addr, int line, LabelType
     temp = search_label_list(*head, name);
     if (temp != NULL) {
         print_ext_error(ERROR_LABEL_DUP, file_name, line);
-        return 0;
+        return FAILURE;
     }
 
     new_node = build_label(name, addr, line, type);
@@ -68,7 +65,7 @@ int add_label_list(label_table **head, char *name, int addr, int line, LabelType
         temp->next = new_node;
     }
 
-    return 1;
+    return SUCCESS;
 }
 
 void add_address_to_label(label_table *node, int addr) {

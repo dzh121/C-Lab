@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include "globals.h"
 #include "errors.h"
-#include "tables.h"
 
 void *handle_malloc(long size);
 int is_reserved (char *line);
@@ -21,4 +20,6 @@ void init_data_list(DataList *list);
 int isValidLabel(char *label);
 int build_output_files(char* file_name, DataList* data_list, label_table* label_head, int ICF, int DCF);
 char *add_suffix(char *file_name, char *suffix);
+char* trim_whitespace(char* str);
+
 #endif

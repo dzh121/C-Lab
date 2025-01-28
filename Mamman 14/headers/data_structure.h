@@ -2,11 +2,11 @@
 #define DATA_STRUCTURE_H
 
 #include "globals.h"
+#include "funcs.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "funcs.h"
-#include "errors.h"
 
 /* Linked list */
 typedef struct macro_node {

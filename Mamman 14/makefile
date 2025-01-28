@@ -6,32 +6,32 @@ CFLAGS = -Wall -ansi -pedantic
 assembler: assembler.o code_translation.o data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o
 	$(CC) $(CFLAGS) assembler.o code_translation.o data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o -o assembler
 
-assembler.o: assembler.c assembler.h globals.h tables.h funcs.h preproc.h first_pass.h second_pass.h code_translation.h errors.h data_structure.h
-	$(CC) -c $(CFLAGS) assembler.c -o assembler.o
+assembler.o: src/assembler.c headers/assembler.h headers/globals.h headers/funcs.h headers/preproc.h headers/first_pass.h headers/second_pass.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/assembler.c -o assembler.o
 
-code_translation.o: code_translation.c code_translation.h globals.h assembler.h funcs.h tables.h errors.h
-	$(CC) -c $(CFLAGS) code_translation.c -o code_translation.o
+code_translation.o: src/code_translation.c headers/code_translation.h headers/globals.h headers/funcs.h headers/tables.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/code_translation.c -o code_translation.o
 
-data_structure.o: data_structure.c data_structure.h globals.h
-	$(CC) -c $(CFLAGS) data_structure.c -o data_structure.o
+data_structure.o: src/data_structure.c headers/data_structure.h headers/globals.h headers/funcs.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/data_structure.c -o data_structure.o
 
-errors.o: errors.c errors.h globals.h
-	$(CC) -c $(CFLAGS) errors.c -o errors.o
+errors.o: src/errors.c headers/errors.h headers/globals.h
+	$(CC) -c $(CFLAGS) src/errors.c -o errors.o
 
-first_pass.o: first_pass.c first_pass.h globals.h assembler.h tables.h funcs.h code_translation.h errors.h
-	$(CC) -c $(CFLAGS) first_pass.c -o first_pass.o
+first_pass.o: src/first_pass.c headers/first_pass.h headers/globals.h headers/tables.h headers/funcs.h headers/code_translation.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/first_pass.c -o first_pass.o
 
-funcs.o: funcs.c funcs.h globals.h assembler.h tables.h errors.h
-	$(CC) -c $(CFLAGS) funcs.c -o funcs.o
+funcs.o: src/funcs.c headers/funcs.h headers/globals.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/funcs.c -o funcs.o
 
-preproc.o: preproc.c preproc.h globals.h data_structure.h assembler.h funcs.h
-	$(CC) -c $(CFLAGS) preproc.c -o preproc.o
+preproc.o: src/preproc.c headers/preproc.h headers/globals.h headers/data_structure.h headers/errors.h headers/funcs.h
+	$(CC) -c $(CFLAGS) src/preproc.c -o preproc.o
 
-second_pass.o: second_pass.c second_pass.h globals.h assembler.h tables.h funcs.h errors.h
-	$(CC) -c $(CFLAGS) second_pass.c -o second_pass.o
+second_pass.o: src/second_pass.c headers/second_pass.h headers/globals.h headers/code_translation.h headers/tables.h headers/funcs.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/second_pass.c -o second_pass.o
 
-tables.o: tables.c tables.h globals.h assembler.h
-	$(CC) -c $(CFLAGS) tables.c -o tables.o
+tables.o: src/tables.c headers/tables.h headers/funcs.h headers/globals.h headers/assembler.h
+	$(CC) -c $(CFLAGS) src/tables.c -o tables.o
 
 clean:
-	rm -f *.o assembler
+	rm -f *.o *.am *.ob *.ent *.ext assembler

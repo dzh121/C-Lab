@@ -1,4 +1,4 @@
-#include "funcs.h"
+#include "../headers/funcs.h"
 
 const char* registers[] = {
 	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"
@@ -61,9 +61,7 @@ void add_data_node(DataList* list, int address, int value)
 	DataNode* current;
 	new_node->address = address;
 
-	/* Convert to a 6-character hex string manually */
-	sprintf(new_node->data, "%06x", value & 0xFFFFFF);
-
+	new_node->data = value;
 	new_node->next = NULL;
 
 	/* Insert in sorted order by address */
@@ -87,10 +85,16 @@ void add_data_node(DataList* list, int address, int value)
 void print_data_list(DataList* list)
 {
 	DataNode* current = list->head;
+	char *hexValue = (char*)handle_malloc(7);
 	while (current)
 	{
-		printf("%04d %s\n", current->address, current->data);
+		sprintf(hexValue, "%06x", current->data & 0xFFFFFF);
+		printf("%04d %s\n", current->address, hexValue);
 		current = current->next;
+	}
+	if (hexValue)
+	{
+		free(hexValue);
 	}
 }
 
@@ -190,6 +194,7 @@ int build_output_files(char* file_name, DataList* data_list, label_table* label_
 	label_table* current_label = label_head;
 	ADDRESS_LIST* current_address = NULL;
 	int has_entries = 0, has_externals = 0;
+	char *hexValue = (char*)handle_malloc(7);
 
 	/* Build the output file names */
 	sprintf(ob_file_name, "%s.ob", file_name);
@@ -208,10 +213,14 @@ int build_output_files(char* file_name, DataList* data_list, label_table* label_
 	fprintf(ob_fp, "%7d %d\n", ICF - 100, DCF);
 	while (current_data)
 	{
-		fprintf(ob_fp, "%07d %s\n", current_data->address, current_data->data);
+		sprintf(hexValue, "%06x", current_data->data & 0xFFFFFF);
+		fprintf(ob_fp, "%07d %s\n", current_data->address, hexValue);
 		current_data = current_data->next;
 	}
-
+	if (hexValue)
+	{
+		free(hexValue);
+	}
 	/* Check and write the entry and external files */
 	while (current_label)
 	{
@@ -277,4 +286,23 @@ char* add_suffix(char* file_name, char* suffix)
 	strcpy(new_name, file_name);
 	strcat(new_name, suffix);
 	return new_name;
+}
+
+char* trim_whitespace(char* str)
+{
+	char* end;
+
+	/* Trim leading spaces. */
+	while (isspace((unsigned char)*str)) str++;
+
+	if (*str == '\0') return str; /* All spaces. */
+
+	/* Trim trailing spaces. */
+	end = str + strlen(str) - 1;
+	while (end > str && isspace((unsigned char)*end)) end--;
+
+	/* Null-terminate. */
+	*(end + 1) = '\0';
+
+	return str;
 }

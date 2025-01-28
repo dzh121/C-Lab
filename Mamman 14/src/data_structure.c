@@ -1,4 +1,4 @@
-#include "data_structure.h"
+#include "../headers/data_structure.h"
 
 
 macro_node *build_node(char *name, char *content, int line) {

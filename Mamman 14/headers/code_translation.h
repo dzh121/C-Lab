@@ -78,7 +78,7 @@ int process_instruction(
     label_table *label_head,
     int address);
 void test_func();
-int parse_and_process_instruction(
+int parse_instruction(
     char *line,
     InstructionList *instruction_list,
     char *file_name,

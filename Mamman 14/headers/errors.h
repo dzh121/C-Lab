@@ -26,12 +26,17 @@
 #define ERROR_PREPROC_FAILED "Preprocessor failed"
 #define ERROR_EMPTY_FILE "Empty file"
 #define ERROR_MACRO_NOT_OPENED "Macro not opened"
+
 /* First Pass Errors */
 #define ERROR_LABEL_TOO_LONG "Label is too long"
 #define ERROR_LABEL_INVALID "Label is invalid"
 #define ERROR_LABEL_RESERVED "Label is reserved"
 #define ERROR_LABEL_DUP "Label already exists"
 #define ERROR_FIRST_PASS_FAILED "First pass failed"
+#define ERROR_INVALID_INSTRUCTION "Invalid instruction"
+#define ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION "Label with no directive or instruction"
+#define ERROR_EXTERN_DEFINED_LOCALLY "Extern defined locally"
+#define ERROR_INVALID_DATA "Invalid data directive"
 
 /* Code Translation Errors */
 #define ERROR_INSTRUCTION_NOT_FOUND "Instruction not found"
@@ -48,13 +53,14 @@
 #define ERROR_UNIDENTIFIED_VAR "Unidentified variable"
 #define ERROR_ILLEGAL_COMMA "Illegal comma"
 #define ERROR_UNDEFINED_COMMAND "Undefined command name"
-#define ERROR_INVALID_NUMBER "Invalid parameter - not a number"
+#define ERROR_INVALID_NUMBER "Invalid parameter not a number"
 #define ERROR_MISSING_OPERAND "Missing operand"
 #define ERROR_MULTIPLE_COMMA "Multiple consecutive commas"
 #define ERROR_EXTRA_TEXT "Extraneous text after end of command"
 #define ERROR_MISSING_COMMA "Missing comma"
 #define ERROR_MISSING_EXTERNAL_NAME "Missing extern name"
 #define ERROR_STRING_MISSING_QUOTES "Missing quotes in string"
+
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
 #define ERROR_UNDEFINED_DEST_LABEL "Undefined destination label"

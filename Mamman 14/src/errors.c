@@ -1,4 +1,4 @@
-#include "errors.h"
+#include "../headers/errors.h"
 #include <stdio.h>
 
 void print_internal_error(char *error_message) {

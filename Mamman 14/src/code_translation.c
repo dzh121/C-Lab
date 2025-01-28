@@ -1,4 +1,4 @@
-#include "code_translation.h"
+#include "../headers/code_translation.h"
 
 
 Instruction operations[] = {
@@ -271,7 +271,7 @@ int process_instruction(
 }
 
 
-int parse_and_process_instruction(
+int parse_instruction(
     char *line,
     InstructionList *instruction_list,
     char *file_name,
@@ -291,7 +291,7 @@ int parse_and_process_instruction(
     if (!found_inst) {
         print_ext_error(ERROR_INSTRUCTION_NOT_FOUND, file_name, line_number);
         free(inst);
-        return 0;
+        return FAILURE;
     }
 
     memcpy(inst, found_inst, sizeof(Instruction));
@@ -299,7 +299,7 @@ int parse_and_process_instruction(
     if (*line == ',') {
         print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
         free(inst);
-        return 0;
+        return FAILURE;
     }
 
     line = skipSpaces(line);
@@ -326,7 +326,7 @@ int parse_and_process_instruction(
             if (line[0] == ',') {
                 print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
                 free(inst);
-                return 0;
+                return FAILURE;
             }
 
             if (line[0] == '#') {
@@ -335,7 +335,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return 0;
+                    return FAILURE;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -348,7 +348,7 @@ int parse_and_process_instruction(
                 if (!isdigit(line[1])) {
                     print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
                     free(inst);
-                    return 0;
+                    return FAILURE;
                 }
                 inst->dest_operand = atoi(line + 1);
                 line += 2;
@@ -371,7 +371,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->src_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return 0;
+                    return FAILURE;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -392,7 +392,7 @@ int parse_and_process_instruction(
             if (*line != ',') {
                 print_ext_error(ERROR_MISSING_COMMA, file_name, line_number);
                 free(inst);
-                return 0;
+                return FAILURE;
             }
             line = skipSpaces(line + 1);
 
@@ -404,7 +404,7 @@ int parse_and_process_instruction(
                 number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
                 if (number_length == 0) {
                     free(inst);
-                    return 0;
+                    return FAILURE;
                 }
                 line += 1 + number_length;
             } else if (line[0] == '&') {
@@ -428,7 +428,7 @@ int parse_and_process_instruction(
 
     add_instruction(instruction_list, inst);
     free(inst);
-    return 1;
+    return SUCCESS;
 }
 
 

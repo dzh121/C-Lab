@@ -5,6 +5,7 @@
 #include "tables.h"
 #include "errors.h"
 #include "funcs.h"
+#include "code_translation.h"
 
 int second_pass(InstructionList *instruction_list, DataList *data_list, label_table *label_head, char *file_name);
 

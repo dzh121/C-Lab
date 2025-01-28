@@ -1,6 +1,4 @@
-#include "second_pass.h"
-
-#include "code_translation.h"
+#include "../headers/second_pass.h"
 
 int handle_entry(char *line, label_table *label_head, char *file_name, int line_count)
 {
