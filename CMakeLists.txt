@@ -18,8 +18,8 @@ add_executable(mamman23_timediff "Mamman 23/timediff.c"
 add_executable(mamman14_preproc
         "Mamman 14/src/preproc.c"
         "Mamman 14/headers/preproc.h"
-        "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h"
+        "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h"
         "Mamman 14/headers/assembler.h"
         "Mamman 14/headers/funcs.h"
         "Mamman 14/src/funcs.c"
@@ -39,8 +39,8 @@ add_executable(mamman14_assembler
         "Mamman 14/headers/errors.h"
         "Mamman 14/src/preproc.c"
         "Mamman 14/headers/preproc.h"
-        "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h"
+        "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h"
         "Mamman 14/src/code_translation.c"
         "Mamman 14/headers/code_translation.h"
         "Mamman 14/src/second_pass.c"
@@ -57,8 +57,8 @@ add_executable(mamman14_tables
         "Mamman 14/headers/errors.h"
         "Mamman 14/src/preproc.c"
         "Mamman 14/headers/preproc.h"
-        "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h"
+        "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h"
         "Mamman 14/src/code_translation.c"
         "Mamman 14/headers/code_translation.h")
 add_executable(mamman14_first_pass
@@ -74,8 +74,8 @@ add_executable(mamman14_first_pass
         "Mamman 14/headers/errors.h"
         "Mamman 14/src/preproc.c"
         "Mamman 14/headers/preproc.h"
-        "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h"
+        "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h"
         "Mamman 14/src/code_translation.c"
         "Mamman 14/headers/code_translation.h")
 add_executable(mamman14_code
@@ -93,8 +93,8 @@ add_executable(mamman14_code
         "Mamman 14/headers/errors.h"
         "Mamman 14/src/preproc.c"
         "Mamman 14/headers/preproc.h"
-        "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h")
-add_executable(mamman14_data "Mamman 14/src/data_structure.c"
-        "Mamman 14/headers/data_structure.h")
+        "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h")
+add_executable(mamman14_data "Mamman 14/src/macro_data_structure.c"
+        "Mamman 14/headers/macro_data_structure.h")
 add_executable(testing_main "testing/main.c")

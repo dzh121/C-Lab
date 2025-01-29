@@ -195,7 +195,7 @@ int preproc(char* file_as, char* file_am)
 			}
 
 			/* Add macro to the linked list */
-			if (add_node(&head, macro_name, macro_content, macro_line, file_as) != 1)
+			if (add_node(&head, macro_name, macro_content, macro_line, file_as))
 			{
 				did_fail = TRUE;
 				free(macro_content);

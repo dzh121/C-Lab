@@ -19,9 +19,9 @@ int main(int argc, char* argv[])
 		return FAILURE;
 	}
 
-
-	printf("Starting assembler...\n");
+	printf("\n======================= STARTING ASSEMBLER =======================\n");
 	printf("Total files to process: %d\n", argc - 1);
+	printf("=================================================================\n");
 
 	/* Process each input file */
 	for (file_index = 1; file_index < argc; file_index++)
@@ -33,9 +33,10 @@ int main(int argc, char* argv[])
 		/* Add a null terminator to the preprocessor file name */
 		preproc_file[sizeof(preproc_file) - 1] = '\0';
 
-		printf("\n===================================================\n");
-		printf("Processing file %d of %d: %s\n", file_index, argc - 1, input_file);
-		printf("===================================================\n");
+		printf("\n=================================================================\n");
+		printf("                 Processing File %d of %d: %-20s                 \n",
+		       file_index, argc - 1, input_file);
+		printf("=================================================================\n");
 
 		/* Allocate memory for the instruction and data counters */
 		ICF = (int*)handle_malloc(sizeof(int));
@@ -56,57 +57,59 @@ int main(int argc, char* argv[])
 			continue;
 		}
 
-		/* Process the input file */
-		printf("Step 1: Starting preprocessor for %s\n", file_as);
+		/* Step 1: Preprocessing */
+		printf("\n------------------ Step 1: Preprocessing %s ------------------\n", file_as);
 		if (preproc(file_as, file_am))
 		{
 			print_ext_error(ERROR_PREPROC_FAILED, file_as, -1);
 			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
 			continue;
 		}
-		printf("Step 1 Complete: Preprocessor finished for %s\n", file_as);
+		printf("Step 1 Complete: Preprocessor finished successfully for %s\n", file_as);
 
-		/* First pass */
-		printf("Step 2: Starting first pass for %s\n", file_am);
+		/* Step 2: First Pass */
+		printf("\n------------------ Step 2: First Pass %s ------------------\n", file_am);
 		if (first_pass(file_am, &data_list, &instruction_list, &label_head, ICF, DCF))
 		{
 			print_ext_error(ERROR_FIRST_PASS_FAILED, file_am, -1);
 			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
 			continue;
 		}
-		printf("Step 2 Complete: First pass done for %s\n", file_am);
+		printf("Step 2 Complete: First pass done successfully for %s\n", file_am);
 
-		/* Second pass */
-		printf("Step 3: Starting second pass for %s\n", file_am);
-		if (!second_pass(&instruction_list, &data_list, label_head, file_am))
+		/* Step 3: Second Pass */
+		printf("\n------------------ Step 3: Second Pass %s ------------------\n", file_am);
+		if (second_pass(&instruction_list, &data_list, label_head, file_am))
 		{
 			print_ext_error(ERROR_SECOND_PASS_FAILED, file_am, -1);
 			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
 			continue;
 		}
-		printf("Step 3 Complete: Second pass done for %s\n", file_am);
+		printf("Step 3 Complete: Second pass done successfully for %s\n", file_am);
 
-		/* Build output files */
-		printf("Step 4: Building output files for %s\n", input_file);
-		if (!build_output_files(input_file, &data_list, label_head, *ICF, *DCF))
+		/* Step 4: Build Output Files */
+		printf("\n------------------ Step 4: Building Output Files %s ------------------\n", input_file);
+		if (build_output_files(input_file, &data_list, label_head, *ICF, *DCF))
 		{
 			print_ext_error(ERROR_BUILD_OUTPUT_FAILED, file_am, -1);
 			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
 			continue;
 		}
-		printf("Step 4 Complete: Output files created for %s\n", input_file);
+		printf("Step 4 Complete: Output files created successfully for %s\n", input_file);
 
 		/* Increment the total success count */
 		total_success += 1;
 
 		/* Cleanup resources */
 		cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
-		printf("File processing complete: %s\n", input_file);
+		printf("=============== File: %s Processing Complete ===============\n", input_file);
 	}
 
-	printf("\n===================================================\n");
-	printf("%d of %d files processed successfully\n", total_success, argc - 1);
-	printf("===================================================\n");
+	/* Final summary */
+	printf("\n=================================================================\n");
+	printf("        %d of %d files processed successfully.        \n", total_success, argc - 1);
+	printf("=================================================================\n");
+
 	return SUCCESS;
 }
 

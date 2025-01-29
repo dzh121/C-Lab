@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "funcs.h"
 #include "errors.h"
-#include "data_structure.h"
+#include "macro_data_structure.h"
 
 /**
  * @brief Preprocesses an assembly file by expanding macros and reformatting the code.

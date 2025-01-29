@@ -12,7 +12,7 @@ assembler.o: src/assembler.c headers/assembler.h headers/globals.h headers/funcs
 code_translation.o: src/code_translation.c headers/code_translation.h headers/globals.h headers/funcs.h headers/tables.h headers/errors.h
 	$(CC) -c $(CFLAGS) src/code_translation.c -o code_translation.o
 
-data_structure.o: src/data_structure.c headers/data_structure.h headers/globals.h headers/funcs.h headers/errors.h
+data_structure.o: src/macro_data_structure.c headers/macro_data_structure.h headers/globals.h headers/funcs.h headers/errors.h
 	$(CC) -c $(CFLAGS) src/data_structure.c -o data_structure.o
 
 errors.o: src/errors.c headers/errors.h headers/globals.h
@@ -24,7 +24,7 @@ first_pass.o: src/first_pass.c headers/first_pass.h headers/globals.h headers/ta
 funcs.o: src/funcs.c headers/funcs.h headers/globals.h headers/errors.h
 	$(CC) -c $(CFLAGS) src/funcs.c -o funcs.o
 
-preproc.o: src/preproc.c headers/preproc.h headers/globals.h headers/data_structure.h headers/errors.h headers/funcs.h
+preproc.o: src/preproc.c headers/preproc.h headers/globals.h headers/macro_data_structure.h headers/errors.h headers/funcs.h
 	$(CC) -c $(CFLAGS) src/preproc.c -o preproc.o
 
 second_pass.o: src/second_pass.c headers/second_pass.h headers/globals.h headers/code_translation.h headers/tables.h headers/funcs.h headers/errors.h

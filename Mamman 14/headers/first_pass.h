@@ -11,9 +11,6 @@
 #include "funcs.h"
 #include "errors.h"
 
-#define INITIAL_IC 100 /* Initial value for the instruction counter */
-#define INITIAL_DC 0 /* Initial value for the data counter */
-
 #define DATA_DIRECTIVE_OFFSET 5 /* Offset for the data directive */
 #define EXTERN_DIRECTIVE_OFFSET 7 /* Offset for the extern directive */
 

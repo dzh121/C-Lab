@@ -1,7 +1,6 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
-#include "globals.h"
 #include <stdio.h>
 
 /* File Handling Errors */
@@ -35,7 +34,6 @@
 #define ERROR_FIRST_PASS_FAILED "First pass failed"
 #define ERROR_INVALID_INSTRUCTION "Invalid instruction"
 #define ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION "Label with no directive or instruction"
-#define ERROR_EXTERN_DEFINED_LOCALLY "Extern defined locally"
 #define ERROR_INVALID_DATA "Invalid data directive"
 
 /* Code Translation Errors */
@@ -45,14 +43,10 @@
 #define ERROR_NULL_INSTRUCTION "Instruction is NULL"
 #define ERROR_INVALID_OPCODE "Invalid opcode"
 #define ERROR_INVALID_FUNCT "Invalid funct"
-#define ERROR_INVALID_ADDRESSING_MODE "Invalid addressing mode"
 #define ERROR_INVALID_ARE_BITS "Invalid ARE bits"
 #define ERROR_INVALID_SOURCE_REGISTER "Invalid source register"
-#define ERROR_INVALID_DESTINATION_REGISTER "Invalid destination register"
 #define ERROR_INVALID_OPERAND_TYPE "Invalid operand type"
-#define ERROR_UNIDENTIFIED_VAR "Unidentified variable"
 #define ERROR_ILLEGAL_COMMA "Illegal comma"
-#define ERROR_UNDEFINED_COMMAND "Undefined command name"
 #define ERROR_INVALID_NUMBER "Invalid parameter not a number"
 #define ERROR_MISSING_OPERAND "Missing operand"
 #define ERROR_MULTIPLE_COMMA "Multiple consecutive commas"
@@ -60,6 +54,7 @@
 #define ERROR_MISSING_COMMA "Missing comma"
 #define ERROR_MISSING_EXTERNAL_NAME "Missing extern name"
 #define ERROR_STRING_MISSING_QUOTES "Missing quotes in string"
+#define ERROR_INVALID_DESTINATION_REGISTER "Invalid destination register"
 
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
@@ -67,6 +62,8 @@
 #define ERROR_ENTRY_FAILED "Failed to handle entry"
 #define ERROR_ENTRY_LABEL_NOT_FOUND "Entry label not found"
 #define ERROR_SECOND_PASS_FAILED "Second pass failed"
+#define ERROR_MISSING_ENTRY_NAME "Missing entry name"
+#define ERROR_ENTRY_CANNOT_BE_EXTERN "Entry cannot be extern"
 
 /* General warnings */
 #define WARNING_LABEL_AT_START_ENTRY "Label at the start of .entry is meaningless"
@@ -75,8 +72,41 @@
 /* General Errors */
 #define ERROR_BUILD_OUTPUT_FAILED "Failed to build output files"
 
+/**
+ * @brief Prints an internal error message.
+ *
+ * This function is used for reporting internal program errors that
+ * are not related to user input, such as memory allocation failures
+ * or unexpected conditions.
+ *
+ * @param error_message The error message to display.
+ */
 void print_internal_error(char *error_message);
+
+/**
+ * @brief Prints an error message related to a specific file and line.
+ *
+ * This function reports errors encountered while processing an
+ * assembly file. It includes the file name and line number.
+ * If the line number is set to -1, the error
+ * applies to the entire file rather than a specific line.
+ *
+ * @param error_message The error message to display.
+ * @param file_name The name of the file where the error occurred.
+ * @param line_number The line number where the error was found (-1 if the error applies to the entire file).
+ */
 void print_ext_error(char *error_message, char *file_name, int line_number);
+
+/**
+ * @brief Prints a warning message related to a specific file and line.
+ *
+ * This function is used to display warnings that do not stop assembly
+ * but may indicate potential issues in the source code.
+ *
+ * @param warning_message The warning message to display.
+ * @param file_name The name of the file where the warning occurred.
+ * @param line_number The line number where the warning was found.
+ */
 void print_ext_warning(char *warning_message, char *file_name, int line_number);
 
 #endif
