@@ -175,12 +175,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
         after_label = strchr(line, ':'); /*skip : and space*/
         if (after_label != NULL) {
             label_length = after_label - line; /* Calculate label length  dont count : */
-            /* Check if the label is too long */
-            if (label_length >= MAX_LABEL_SIZE) {
-                print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_count);
-                did_fail = TRUE;
-                continue;
-            }
+
             /* Copy the label to the buffer */
             strncpy(label, line, label_length);
             /* Ensure null-termination */
@@ -189,7 +184,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Check if the label is valid */
             if (!isValidLabel(label, file_name, line_count)) {
                 did_fail = TRUE;
-                continue;
+                memset(label, '\0', sizeof(label)); /* Clear the label buffer */
             }
 
             after_label++; /* Move past ':' */
@@ -214,18 +209,16 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Encode the data */
             if (encode_data(after_label, &DC, IC, data_list, file_name, line_count)) {
                 did_fail = TRUE;
-                continue;
             }
         } else if (strncmp(after_label, ".string", 7) == 0 && isspace(after_label[7])) {
             /* Check if there is a label */
-            if (label[0] != '\0') {
+            if (label[0] != '\0' && label[0] != '\n') {
                 /* Add the label to the label table */
                 add_label_list(label_head, label, DC, line_count, DATA, file_name);
             }
             /* Encode the string */
             if (encode_string(after_label, &DC, IC, data_list, file_name, line_count)) {
                 did_fail = TRUE;
-                continue;
             }
         } else if (strncmp(after_label, ".extern", 7) == 0 && isspace(after_label[7])) {
             /* Check if there is a label */
@@ -250,14 +243,12 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Invalid directive (not .data .string .entry or .extern) */
             print_ext_error(ERROR_INVALID_INSTRUCTION, file_name, line_count);
             did_fail = TRUE;
-            continue;
         } else {
             /* Check if there is a label */
             if (label[0] != '\0') {
                 /* Add the label to the label table */
                 if (add_label_list(label_head, label, IC, line_count, CODE, file_name)) {
                     did_fail = TRUE;
-                    continue;
                 }
             }
 

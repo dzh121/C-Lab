@@ -2,7 +2,8 @@
 
 .entry LIST
 .extern W
-
+adddnsajkldjklhdhkjdjkhdajkhdasjkjkhdsa: add r1,F
+add r2, r2
 MAIN: add r3, LIST
 LOOP:   prn #48
         lea W, r6

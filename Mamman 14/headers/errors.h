@@ -64,6 +64,8 @@
 #define ERROR_SECOND_PASS_FAILED "Second pass failed"
 #define ERROR_MISSING_ENTRY_NAME "Missing entry name"
 #define ERROR_ENTRY_CANNOT_BE_EXTERN "Entry cannot be extern"
+#define ERROR_INVALID_SOURCE_OPERAND "Invalid source operand"
+#define ERROR_INVALID_DESTINATION_OPERAND "Invalid destination operand"
 
 /* General warnings */
 #define WARNING_LABEL_AT_START_ENTRY "Label at the start of .entry is meaningless"

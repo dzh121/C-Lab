@@ -465,7 +465,7 @@ int parse_instruction(char *line, InstructionList *instruction_list, char *file_
                 if (line[0] == ',')
                     print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
                 else
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
+                    print_ext_error(ERROR_INVALID_SOURCE_OPERAND, file_name, line_number);
                 free(inst);
                 inst = NULL;
                 return FAILURE;
@@ -510,13 +510,13 @@ int parse_instruction(char *line, InstructionList *instruction_list, char *file_
                 inst->dest_mode = REGISTER_DIRECT;
                 /* Check if the register is valid */
                 if (!isdigit(line[1])) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
+                    print_ext_error(ERROR_INVALID_DESTINATION_REGISTER, file_name, line_number);
                     free(inst);
                     return FAILURE;
                 }
                 /* Check for invalid register */
                 if (line[2] && isalnum(line[2])) {
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
+                    print_ext_error(ERROR_INVALID_DESTINATION_REGISTER, file_name, line_number);
                     free(inst);
                     return FAILURE;
                 }
@@ -535,12 +535,12 @@ int parse_instruction(char *line, InstructionList *instruction_list, char *file_
                 if (line[0] == ',')
                     print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
                 else
-                    print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
+                    print_ext_error(ERROR_INVALID_DESTINATION_OPERAND, file_name, line_number);
                 free(inst);
                 inst = NULL;
                 return FAILURE;
             }
-
+            line = skipSpaces(line);
             /* Check for extraneous text */
             EXTRANEOUS_TEXT(*line, file_name, line_number);
             break;

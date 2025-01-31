@@ -11,6 +11,7 @@ int main(int argc, char* argv[])
 	label_table* label_head; /* Head of the label table */
 	char *file_am = NULL, *file_as = NULL; /* File paths for .am and .as files */
 	int total_success = 0; /* Total number of files processed successfully */
+	int did_fail = FALSE; /* Flag to indicate if any errors occurred */
 
 	/* Check for input files */
 	if (argc < 2)
@@ -71,38 +72,44 @@ int main(int argc, char* argv[])
 		printf("\n------------------ Step 2: First Pass %s ------------------\n", file_am);
 		if (first_pass(file_am, &data_list, &instruction_list, &label_head, ICF, DCF))
 		{
-			print_ext_error(ERROR_FIRST_PASS_FAILED, file_am, -1);
-			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
-			continue;
+			printf("Step 2 Complete: First pass finished with errors for %s\n", file_am);
+			did_fail = TRUE;
+		}else {
+			printf("Step 2 Complete: First pass done successfully for %s\n", file_am);
 		}
-		printf("Step 2 Complete: First pass done successfully for %s\n", file_am);
 
 		/* Step 3: Second Pass */
 		printf("\n------------------ Step 3: Second Pass %s ------------------\n", file_am);
 		if (second_pass(&instruction_list, &data_list, label_head, file_am))
 		{
-			print_ext_error(ERROR_SECOND_PASS_FAILED, file_am, -1);
-			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
-			continue;
-		}
-		printf("Step 3 Complete: Second pass done successfully for %s\n", file_am);
+			printf("Step 3 Complete: Second pass finished with errors for %s\n", file_am);
+			did_fail = TRUE;
+		}else
+			printf("Step 3 Complete: Second pass done successfully for %s\n", file_am);
 
 		/* Step 4: Build Output Files */
 		printf("\n------------------ Step 4: Building Output Files %s ------------------\n", input_file);
-		if (build_output_files(input_file, &data_list, label_head, *ICF, *DCF))
+		if (!did_fail && build_output_files(input_file, &data_list, label_head, *ICF, *DCF))
 		{
 			print_ext_error(ERROR_BUILD_OUTPUT_FAILED, file_am, -1);
-			cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
-			continue;
+			did_fail = TRUE;
 		}
 		printf("Step 4 Complete: Output files created successfully for %s\n", input_file);
 
 		/* Increment the total success count */
-		total_success += 1;
+		if (!did_fail)
+			total_success += 1;
 
 		/* Cleanup resources */
 		cleanup_resources(ICF, DCF, label_head, &data_list, &instruction_list, file_am, file_as);
-		printf("=============== File: %s Processing Complete ===============\n", input_file);
+
+		if (did_fail)
+			printf("=============== Failed to process file: %s ===============\n", input_file);
+		else
+			printf("=============== File: %s Processed Successfully ===============\n", input_file);
+
+		did_fail = FALSE; /* Reset the failure flag */
+
 	}
 
 	/* Final summary */
