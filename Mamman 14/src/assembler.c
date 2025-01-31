@@ -34,9 +34,9 @@ int main(int argc, char* argv[])
 		preproc_file[sizeof(preproc_file) - 1] = '\0';
 
 		printf("\n=================================================================\n");
-		printf("                 Processing File %d of %d: %-20s                 \n",
+		printf("                 Processing File %d of %d: %s                 \n",
 		       file_index, argc - 1, input_file);
-		printf("=================================================================\n");
+		printf("==================================================================\n");
 
 		/* Allocate memory for the instruction and data counters */
 		ICF = (int*)handle_malloc(sizeof(int));

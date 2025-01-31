@@ -159,6 +159,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
     label_table *label_dummy = NULL; /* Temporary pointer for label processing */
     DataNode *current_data = NULL; /* Pointer for traversing data nodes */
     Instruction *inst = NULL; /* Pointer to the current instruction */
+    /* For the rest of this assembler we know there is only tailing or leading white spaces and if there are multiple white spaces they are treated as one */
 
     /* Open the input file */
     if ((fp = fopen(file_name, "r")) == NULL) {
@@ -194,7 +195,8 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             after_label++; /* Move past ':' */
             if (isspace(*after_label)) after_label++; /* Skip space if present */
 
-            if (after_label == NULL) {
+            /* Check if there is a label with no directive or instruction */
+            if (after_label == NULL || *after_label == '\0') {
                 print_ext_error(ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION, file_name, line_count);
                 did_fail = TRUE;
                 continue;
@@ -250,11 +252,6 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             did_fail = TRUE;
             continue;
         } else {
-            if (label[0] != '\0' && (*after_label == '\n' || *after_label == '\0')) {
-                /*TODO: check if label is valid */
-                print_ext_error(ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION, file_name, line_count);
-                continue;
-            }
             /* Check if there is a label */
             if (label[0] != '\0') {
                 /* Add the label to the label table */

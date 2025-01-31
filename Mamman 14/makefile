@@ -3,8 +3,8 @@ CC = gcc
 CFLAGS = -Wall -ansi -pedantic
 
 # Target executable
-assembler: assembler.o code_translation.o data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o
-	$(CC) $(CFLAGS) assembler.o code_translation.o data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o -o assembler
+assembler: assembler.o code_translation.o macro_data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o
+	$(CC) $(CFLAGS) assembler.o code_translation.o macro_data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o -o assembler
 
 assembler.o: src/assembler.c headers/assembler.h headers/globals.h headers/funcs.h headers/preproc.h headers/first_pass.h headers/second_pass.h headers/errors.h
 	$(CC) -c $(CFLAGS) src/assembler.c -o assembler.o
@@ -12,8 +12,8 @@ assembler.o: src/assembler.c headers/assembler.h headers/globals.h headers/funcs
 code_translation.o: src/code_translation.c headers/code_translation.h headers/globals.h headers/funcs.h headers/tables.h headers/errors.h
 	$(CC) -c $(CFLAGS) src/code_translation.c -o code_translation.o
 
-data_structure.o: src/macro_data_structure.c headers/macro_data_structure.h headers/globals.h headers/funcs.h headers/errors.h
-	$(CC) -c $(CFLAGS) src/data_structure.c -o data_structure.o
+macro_data_structure.o: src/macro_data_structure.c headers/macro_data_structure.h headers/globals.h headers/funcs.h headers/errors.h
+	$(CC) -c $(CFLAGS) src/macro_data_structure.c -o macro_data_structure.o
 
 errors.o: src/errors.c headers/errors.h headers/globals.h
 	$(CC) -c $(CFLAGS) src/errors.c -o errors.o
