@@ -185,6 +185,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             if (!isValidLabel(label, file_name, line_count)) {
                 did_fail = TRUE;
                 memset(label, '\0', sizeof(label)); /* Clear the label buffer */
+                continue;
             }
 
             after_label++; /* Move past ':' */
@@ -204,7 +205,10 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Encode the data */
             if (label[0] != '\0') {
                 /* Add the label to the label table */
-                add_label_list(label_head, label, DC, line_count, DATA, file_name);
+                if (add_label_list(label_head, label, DC, line_count, DATA, file_name)) {
+                    did_fail = TRUE;
+                    continue;
+                }
             }
             /* Encode the data */
             if (encode_data(after_label, &DC, IC, data_list, file_name, line_count)) {
@@ -214,11 +218,15 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Check if there is a label */
             if (label[0] != '\0' && label[0] != '\n') {
                 /* Add the label to the label table */
-                add_label_list(label_head, label, DC, line_count, DATA, file_name);
+                if (add_label_list(label_head, label, DC, line_count, DATA, file_name)) {
+                    did_fail = TRUE;
+                    continue;
+                }
             }
             /* Encode the string */
             if (encode_string(after_label, &DC, IC, data_list, file_name, line_count)) {
                 did_fail = TRUE;
+                continue;
             }
         } else if (strncmp(after_label, ".extern", 7) == 0 && isspace(after_label[7])) {
             /* Check if there is a label */
@@ -243,12 +251,14 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Invalid directive (not .data .string .entry or .extern) */
             print_ext_error(ERROR_INVALID_INSTRUCTION, file_name, line_count);
             did_fail = TRUE;
+            continue;
         } else {
             /* Check if there is a label */
             if (label[0] != '\0') {
                 /* Add the label to the label table */
                 if (add_label_list(label_head, label, IC, line_count, CODE, file_name)) {
                     did_fail = TRUE;
+                    continue;
                 }
             }
 

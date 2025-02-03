@@ -2,7 +2,7 @@
 
 .entry LIST
 .extern W
-adddnsajkldjklhdhkjdjkhdajkhdasjkjkhdsa: add r1,F
+hi: add r1,F
 add r2, r2
 MAIN: add r3, LIST
 LOOP:   prn #48
@@ -18,6 +18,7 @@ LOOP:   prn #48
         jmp &LOOP
         add L3, L3
 END:    stop
+STR:    .string "abcd"
 STR:    .string "abcd"
 LIST:   .data +6,-9
         .data -100
