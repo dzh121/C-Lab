@@ -38,6 +38,6 @@ int main(int argc, char *argv[]);
  * @param file_am Pointer to the name of the preprocessed file (.am).
  * @param file_as Pointer to the name of the input assembly file (.as).
  */
-void cleanup_resources(int *ICF, int *DCF, label_table *label_head, DataList *data_list, InstructionList *instruction_list, char *file_am, char *file_as);
+void cleanup_resources(int **ICF, int **DCF, label_table *label_head, DataList *data_list, InstructionList *instruction_list, char **file_am, char **file_as);
 
 #endif /* ASSEMBLER_H */
