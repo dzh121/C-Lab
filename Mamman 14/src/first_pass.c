@@ -189,7 +189,15 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             }
 
             after_label++; /* Move past ':' */
-            if (isspace(*after_label)) after_label++; /* Skip space if present */
+
+            /* Check for white space after the label */
+            if (!isspace(*after_label))
+            {
+                did_fail = TRUE;
+                print_ext_error(ERROR_MISSING_WHITE_SPACE, file_name, line_count);
+                continue;
+            }
+            after_label++; /* Move past the white space */
 
             /* Check if there is a label with no directive or instruction */
             if (after_label == NULL || *after_label == '\0') {
@@ -213,6 +221,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             /* Encode the data */
             if (encode_data(after_label, &DC, IC, data_list, file_name, line_count)) {
                 did_fail = TRUE;
+                continue;
             }
         } else if (strncmp(after_label, ".string", 7) == 0 && isspace(after_label[7])) {
             /* Check if there is a label */

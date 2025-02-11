@@ -76,7 +76,6 @@ int second_pass(InstructionList *instruction_list, DataList *data_list, label_ta
         /* Check for entry */
         if (strncmp(after_label, ".entry", 6) == 0) {
             if (handle_entry(after_label, label_head, file_name, line_count)) {
-                print_ext_error(ERROR_ENTRY_FAILED, file_name, line_count);
                 did_fail = TRUE;
             }
         }

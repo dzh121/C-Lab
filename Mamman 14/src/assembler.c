@@ -79,17 +79,19 @@ int main(int argc, char *argv[]) {
             } else {
                 printf("Step 3 Complete: Second pass done successfully for %s\n", file_am);
             }
+        }
+        /* Increment the total success count */
+        if (!did_fail)
+        {
             /* Step 4: Build Output Files */
             printf("\n------------------ Step 4: Building Output Files %s ------------------\n", input_file);
             if (!did_fail && build_output_files(input_file, &data_list, label_head, *ICF, *DCF)) {
                 printf("Step 4 Complete: Failed to create output files for %s\n", input_file);
-                did_fail = TRUE;
             } else {
+                total_success++;
                 printf("Step 4 Complete: Output files created successfully for %s\n", input_file);
             }
         }
-        /* Increment the total success count */
-        if (!did_fail) total_success++;
 
         /* Cleanup resources */
         if (did_fail)

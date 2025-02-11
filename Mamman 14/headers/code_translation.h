@@ -178,4 +178,17 @@ int process_instruction(Instruction *inst, char *file_name, int line_number, Dat
  * @return int Returns 0 if parsing is successful, otherwise 1.
  */
 int parse_instruction(char *line, InstructionList *instruction_list, char *file_name, int line_number);
+
+/**
+ * @brief Validates the addressing modes of an instruction.
+ *
+ * Checks the addressing modes of the source and destination operands
+ * in an instruction to ensure they are valid and compatible.
+ *
+ * @param inst Pointer to the instruction to validate.
+ * @param file_name Name of the source file (for error reporting).
+ * @param line_number Line number of the instruction in the source file.
+ * @return int Returns 0 if the addressing modes are valid, otherwise 1.
+ */
+int validate_addressing_modes(Instruction *inst, char *file_name, int line_number);
 #endif

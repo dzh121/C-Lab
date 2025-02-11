@@ -35,6 +35,7 @@
 #define ERROR_INVALID_INSTRUCTION "Invalid instruction"
 #define ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION "Label with no directive or instruction"
 #define ERROR_INVALID_DATA "Invalid data directive"
+#define ERROR_MISSING_WHITE_SPACE "Missing white space after label"
 
 /* Code Translation Errors */
 #define ERROR_INSTRUCTION_NOT_FOUND "Instruction not found"
@@ -55,6 +56,8 @@
 #define ERROR_MISSING_EXTERNAL_NAME "Missing extern name"
 #define ERROR_STRING_MISSING_QUOTES "Missing quotes in string"
 #define ERROR_INVALID_DESTINATION_REGISTER "Invalid destination register"
+#define ERROR_INVALID_OPERAND_ADDRESSING_MODE "Invalid operand addressing mode"
+#define ERROR_EXTRA_OPERANDS "Extra operands"
 
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
@@ -73,6 +76,7 @@
 
 /* General Errors */
 #define ERROR_BUILD_OUTPUT_FAILED "Failed to build output files"
+#define ERROR_LINE_TOO_LONG "Line is too long"
 
 /**
  * @brief Prints an internal error message.

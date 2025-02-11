@@ -9,7 +9,6 @@ char* remove_white_spaces(char* line)
 	if (!line || strlen(line) == 0) return NULL; /* Handle empty line */
 
 	cleaned_line = (char*)handle_malloc(strlen(line) + 1); /* Allocate memory for the cleaned line */
-
 	while (line[i] != '\0')
 	{
 		/* Stop processing at ';' if not inside quotes */
@@ -42,18 +41,12 @@ char* remove_white_spaces(char* line)
 	}
 
 	/* Remove trailing spaces */
-	while (j > 0 && (cleaned_line[j - 1] == ' ' || cleaned_line[j - 1] == '\r'))
+	while (j > 0 && (isspace(cleaned_line[j - 1])))
 	{
 		j--;
 	}
-	if (j < 0)
-	{
-		j = 0; /* Prevent negative index */
-	}
-
 	/* Null-terminate the cleaned line */
 	cleaned_line[j] = '\0';
-
 	return cleaned_line;
 }
 
@@ -90,18 +83,28 @@ int isValidName(char* name, int line, char* file_name)
 	return SUCCESS; /* Valid name */
 }
 
+int getLineLength(char* line)
+{
+	int i = 0; /* Index */
+	/* Loop through the line */
+	while (line[i] != '\0' && line[i] != '\n')
+	{
+		i++; /* Increment index */
+	}
+	return i; /* Return the line length */
+}
+
 /* Preprocessor function to handle macro expansion */
 int preproc(char* file_as, char* file_am)
 {
 	FILE *fptr_as, *fptr_am; /* File pointers for source and output files */
-	char macro_name[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH]; /* Buffers for macro name and line */
+	char macro_name[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH * 2]; /* Buffers for macro name and line times 2 to check if too long */
 	char *macro_content = NULL, *cleaned_line = NULL, *temp = NULL;
 	/* Pointers for dynamic content and temporary values */
 	char *after_mcroend = NULL, *after_mcroname = NULL; /* Pointers for text after 'mcroend' and macro name */
 	int line_count = 0, macro_line = 0, content_size = 0, line_length = 0; /* Counters and sizes */
 	int in_macro = 0, did_fail = FALSE; /* Flags for macro detection and error handling */
 	macro_node *head = NULL, *macro_found = NULL; /* Linked list head and macro search result */
-
 
 	/* Open Source File (.as) */
 	fptr_as = fopen(file_as, "r");
@@ -110,7 +113,7 @@ int preproc(char* file_as, char* file_am)
 		print_internal_error(ERROR_FILE_OPEN_SOURCE);
 		free(file_as);
 		free(file_am);
-		return 0;
+		return FAILURE;
 	}
 
 	/* Open Output File (.am) */
@@ -121,7 +124,7 @@ int preproc(char* file_as, char* file_am)
 		free(file_as);
 		free(file_am);
 		fclose(fptr_as);
-		return 0;
+		return FAILURE;
 	}
 
 	/* Initialize buffers */
@@ -132,6 +135,13 @@ int preproc(char* file_as, char* file_am)
 	while (fgets(line, sizeof(line), fptr_as) != NULL)
 	{
 		line_count++; /* Increment line counter */
+		/* Check if not to long */
+		if (getLineLength(line) > MAX_LINE_LENGTH)
+		{
+			print_ext_error(ERROR_LINE_TOO_LONG, file_as, line_count);
+			did_fail = TRUE;
+			continue;
+		}
 
 		cleaned_line = remove_white_spaces(line); /* Clean the line */
 
@@ -144,11 +154,10 @@ int preproc(char* file_as, char* file_am)
 		}
 
 		/* Skip empty lines */
-		if (line[0] == '\0' || strcmp(line, "\n") == 0)
+		if (!line || line[0] == '\0' || strcmp(line, "\n") == 0)
 		{
 			continue;
 		}
-
 		/* Detect macro declaration */
 		if (strncmp(line, "mcro", 4) == 0 && (line[4] == '\0' || isspace(line[4])))
 		{
@@ -162,18 +171,20 @@ int preproc(char* file_as, char* file_am)
 			{
 				print_ext_error(ERROR_EXTRANEOUS_TEXT_MCRONAME, file_as, line_count);
 				did_fail = TRUE;
+				continue;
 			}
 
 			macro_name[MAX_LINE_LENGTH - 1] = '\0'; /* Ensure null-termination */
 			if (isValidName(macro_name, macro_line, file_as))
 			{
 				did_fail = TRUE;
+				continue;
 			}
 
 			/* Allocate initial memory for macro content */
 			macro_content = handle_malloc(1);
 			macro_content[0] = '\0';
-			content_size = 1;
+			content_size = 0;
 			continue;
 		}
 		if (strncmp(line, "mcroend", 7) == 0 && (line[7] == '\0' || isspace(line[7])))
@@ -192,6 +203,7 @@ int preproc(char* file_as, char* file_am)
 			{
 				print_ext_error(ERROR_EXTRANEOUS_TEXT_MCROEND, file_as, line_count);
 				did_fail = TRUE;
+				continue;
 			}
 
 			/* Add macro to the linked list */
@@ -200,7 +212,7 @@ int preproc(char* file_as, char* file_am)
 				did_fail = TRUE;
 				free(macro_content);
 				macro_content = NULL;
-				did_fail = TRUE;
+				continue;
 			}
 
 			/* Free macro_name and macro_content after adding */
@@ -226,11 +238,11 @@ int preproc(char* file_as, char* file_am)
 			macro_content = temp;
 
 			/* Add new line to macro content */
-			strncat(macro_content, line, line_length);
+			strncpy(macro_content + content_size, line, line_length);
 			content_size += line_length;
 
 			/* If the line does not end with '\n', add it */
-			if (line[strlen(line) - 1] != '\n')
+			if (macro_content[content_size - 1] != '\n')
 			{
 				strncat(macro_content, "\n", 1);
 				content_size += 1;

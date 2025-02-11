@@ -47,4 +47,13 @@ int isValidName(char* name, int line, char* file_name);
  */
 char* remove_white_spaces(char* line);
 
+/**
+ * @brief Get the length of a line.
+ *
+ * Calculates the length of a string, excluding the newline character.
+ *
+ * @param line The input string to measure.
+ * @return int The length of the string.
+ */
+int getLineLength(char* line);
 #endif /* PREPROC_H */
