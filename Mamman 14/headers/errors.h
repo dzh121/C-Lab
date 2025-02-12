@@ -36,6 +36,7 @@
 #define ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION "Label with no directive or instruction"
 #define ERROR_INVALID_DATA "Invalid data directive"
 #define ERROR_MISSING_WHITE_SPACE "Missing white space after label"
+#define ERROR_MISSING_COLON "Missing colon after label"
 
 /* Code Translation Errors */
 #define ERROR_INSTRUCTION_NOT_FOUND "Instruction not found"

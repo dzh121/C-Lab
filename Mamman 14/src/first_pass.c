@@ -187,6 +187,12 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
                 memset(label, '\0', sizeof(label)); /* Clear the label buffer */
                 continue;
             }
+            if (*after_label != ':')
+            {
+                did_fail = TRUE;
+                print_ext_error(ERROR_MISSING_COLON, file_name, line_count);
+                continue;
+            }
 
             after_label++; /* Move past ':' */
 
@@ -197,6 +203,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
                 print_ext_error(ERROR_MISSING_WHITE_SPACE, file_name, line_count);
                 continue;
             }
+
             after_label++; /* Move past the white space */
 
             /* Check if there is a label with no directive or instruction */

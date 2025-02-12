@@ -156,21 +156,18 @@ int isValidLabel(char *label, char *file_name, int line_number) {
 
     /* Check if not empty */
     if (label == NULL || *label == '\0' || isspace(*label)) {
-        printf("here\n");
         print_ext_error(ERROR_LABEL_INVALID, file_name, line_number);
         return 0; /* Empty label */
     }
 
     /* Check if too long */
     if (strlen(label) > MAX_LABEL_SIZE) {
-        printf("here1\n");
         print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
         return 0; /* Too long */
     }
 
     /* Check if starts with a letter or _ */
     if (!isalpha(label[0])) {
-        printf("here2\n");
         print_ext_error(ERROR_LABEL_INVALID, file_name, line_number);
         return 0; /* Must start with a letter */
     }
@@ -178,7 +175,6 @@ int isValidLabel(char *label, char *file_name, int line_number) {
     /* Check if contains only alphanumeric characters */
     for (c = label; *c != '\0'; c++) {
         if (!isalnum(*c)) {
-            printf("here3\n");
             print_ext_error(ERROR_LABEL_INVALID, file_name, line_number);
             return 0; /* Contains invalid character */
         }
@@ -186,7 +182,6 @@ int isValidLabel(char *label, char *file_name, int line_number) {
 
     /* Check if reserved */
     if (is_reserved((char *) label)) {
-        printf("her4e\n");
         print_ext_error(ERROR_LABEL_RESERVED, file_name, line_number);
         return 0; /* Reserved keyword */
     }
