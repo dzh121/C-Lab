@@ -1,0 +1,9 @@
+.entry BOOT
+.extern EXTERNFUNC
+BOOT: lea TEXT, r5
+mov r4, DATA
+prn r5
+jsr EXTERNFUNC
+stop
+TEXT: .string "Assembler Test"
+DATA: .data 5, -15, 40, 100

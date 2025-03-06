@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
             cleanup_resources(&ICF, &DCF, label_head, &data_list, &instruction_list, &file_am, &file_as);
             continue;
         }
-
         /* Step 1: Preprocessing */
         printf("\n------------------ Step 1: Preprocessing %s ------------------\n", file_as);
         if (preproc(file_as, file_am)) {

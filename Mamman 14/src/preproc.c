@@ -154,7 +154,7 @@ int preproc(char* file_as, char* file_am)
 		}
 
 		/* Skip empty lines */
-		if (!line || line[0] == '\0' || strcmp(line, "\n") == 0)
+		if (line[0] == '\0' || strcmp(line, "\n") == 0)
 		{
 			continue;
 		}
@@ -224,9 +224,10 @@ int preproc(char* file_as, char* file_am)
 		}
 		if (in_macro)
 		{
-			line_length = (int)strlen(line) + 1; /* +1 for null terminator */
-			/* Reallocate memory if buffer is too small */
-			temp = realloc(macro_content, content_size + line_length + 1);
+			line_length = strlen(line); /* Get line length without the null terminator */
+
+			/* Reallocate memory to accommodate the new line + newline character + null terminator */
+			temp = realloc(macro_content, content_size + line_length + 2);
 			if (!temp)
 			{
 				free(macro_content);
@@ -237,21 +238,22 @@ int preproc(char* file_as, char* file_am)
 			}
 			macro_content = temp;
 
-			/* Add new line to macro content */
+			/* Copy the new line into the buffer */
 			strncpy(macro_content + content_size, line, line_length);
 			content_size += line_length;
 
-			/* If the line does not end with '\n', add it */
+			/* Ensure the line ends with a newline character */
 			if (macro_content[content_size - 1] != '\n')
 			{
-				strncat(macro_content, "\n", 1);
-				content_size += 1;
+				macro_content[content_size] = '\n';
+				content_size++;
 			}
 
-			/* Ensure null-termination */
+			/* Null-terminate the macro content */
 			macro_content[content_size] = '\0';
 			continue;
 		}
+
 
 
 		macro_found = search_list(head, line); /* Search for macro in the list */

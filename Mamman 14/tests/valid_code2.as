@@ -1,0 +1,24 @@
+.entry START
+
+START:      mov r1, VALUE
+            sub #4, r5
+            cmp r4, r5
+            bne SKIP
+            jmp &LOOP
+
+LOOP:       prn #65
+            inc r2
+            dec r7
+            bne &LOOP
+            jsr ROUTINE
+
+SKIP:       lea MESSAGE, r6
+            red r1
+            stop
+
+ROUTINE:    clr r3
+            not r5
+            rts
+
+MESSAGE:    .string "Loop Test"
+VALUE:      .data -7, 24, 11

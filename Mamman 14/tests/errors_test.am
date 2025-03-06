@@ -1,0 +1,24 @@
+LABEL1: .data 5
+LABEL1: .string "Duplicate"
+LABEL@INVALID: add r1, r2
+CALLMACRO
+mov, r1, r2
+add r1,
+cmp r2, r3 extratext
+.fake_directive 123
+.data 1, , 3
+.string "unterminated
+jmp UNKNOWNLABEL
+.entry UNDEFINEDENTRY
+.extern LABEL2
+LABEL2: .data 10
+mov #5, #10
+mov r8, r1
+lea r2, r3
+sub r1 r2
+add r1,,r2
+prn (r1
+mov &r1, r2
+jmp #100
+.entry LABEL3
+.extern LABEL3

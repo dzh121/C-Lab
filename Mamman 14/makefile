@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic
+CFLAGS = -Wall -ansi -pedantic -g -fsanitize=address
 
 # Target executable
 assembler: assembler.o code_translation.o macro_data_structure.o errors.o first_pass.o funcs.o preproc.o second_pass.o tables.o

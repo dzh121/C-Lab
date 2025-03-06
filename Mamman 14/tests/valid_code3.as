@@ -1,0 +1,16 @@
+.entry INIT
+.extern FUNC
+
+mcro COPY_REG
+    mov r1, r2
+    add #1, r2
+    cmp r2, r3
+mcroend
+
+INIT:       mov r0, r1
+            COPY_REG
+            sub #2, r1
+            jsr FUNC
+            stop
+
+DATA:       .data 3, 6, 9

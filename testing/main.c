@@ -1,20 +1,54 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define MAX_LENGTH 20
-int main() {
-	int x,y, r;
-	printf("Enter two numbers:\n");
-	// scanf("%d%d", &x, &y);
-	while((r = scanf("%d", &x)) != EOF && r != 0)
+#define COURSE_COST 200.0
+
+#define ANSIC 1
+#define ASSEMBLER 2
+
+#define DATABASES 4
+#define JAVA 8
+
+#define ALGEBRAI 0x10
+#define ALGEBRAII 0x20
+
+double student_courses(unsigned courses)
+{
+	double cost=0;
+	if(courses & (ALGEBRAI | ALGEBRAII) == 0)
 	{
-		printf("First Number is:\n");
-		printf("%d (Base 10)\n", x);
+		printf( "NO ALGEBRA \n");
 	}
-	printf("%d", r);
-	printf("---------------------------------------------------\n");
-	printf("First Number is:\n");
-	printf("%d (Base 10)\n", x);
-	printf("Second Number is:\n");
-	printf("%d (Base 10)\n", y);
+	else
+	{
+		printf("ALGEBRA \n");
+	}
+
+	while(courses)
+	{
+		if (courses & 1) cost+=COURSE_COST;
+		courses >>= 1;
+	}
+	return cost;
+}
+
+
+int main() {
+	unsigned selected_courses = ANSIC | JAVA | ALGEBRAI | ALGEBRAII;
+
+	double total_cost = student_courses(selected_courses);
+	printf("Total cost: %.2f\n", total_cost);
+
+	selected_courses = DATABASES | ASSEMBLER;
+
+	total_cost = student_courses(selected_courses);
+	printf("Total cost: %.2f\n", total_cost);
+
+	selected_courses = 0;
+
+	total_cost = student_courses(selected_courses);
+	printf("Total cost: %.2f\n", total_cost);
+
+
 	return 0;
 }
