@@ -1,6 +1,5 @@
 #include "../headers/preproc.h"
 
-/* Remove spaces from a string */
 char* remove_white_spaces(char* line)
 {
 	int i = 0, j = 0, inside_quotes = 0; /* Indexes and flags */

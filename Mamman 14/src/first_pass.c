@@ -126,9 +126,20 @@ int encode_data(char *line, int *DC, int IC, DataList *data_list, char *file_nam
             }
         }
 
+        if (strlen(token) > 8) { /* Check if the number is too long */
+            print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_count);
+            return FAILURE;
+        }
+
         /* Check if the value can be parsed correctly. */
         if (sscanf(token, "%d", &value) != 1) {
             print_ext_error(ERROR_INVALID_NUMBER, file_name, line_count);
+            return FAILURE;
+        }
+
+        /* Check if the value is within the valid range. */
+        if (value > MAX_DATA_VALUE || value < MIN_DATA_VALUE) {
+            print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_count);
             return FAILURE;
         }
 
@@ -137,7 +148,7 @@ int encode_data(char *line, int *DC, int IC, DataList *data_list, char *file_nam
         (*DC)++;
 
         /* Check for memory overflow */
-        if (*DC + IC > MAX_MEMORY_SIZE) {
+        if (*DC + IC >= MAX_MEMORY_SIZE) {
             print_internal_error(ERROR_MEMORY_OVERFLOW);
             return FAILURE;
         }

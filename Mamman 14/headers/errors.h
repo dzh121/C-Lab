@@ -78,6 +78,7 @@
 /* General Errors */
 #define ERROR_BUILD_OUTPUT_FAILED "Failed to build output files"
 #define ERROR_LINE_TOO_LONG "Line is too long"
+#define ERROR_NUMBER_OVERFLOW "Number is too large"
 
 /**
  * @brief Prints an internal error message.
