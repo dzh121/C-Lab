@@ -6,14 +6,11 @@ char* remove_white_spaces(char* line)
 	int i = 0, j = 0, inside_quotes = 0; /* Indexes and flags */
 	char* cleaned_line; /* Cleaned line buffer */
 
-	if (!line || strlen(line) == 0) return NULL; /* Handle empty line */
+	if (!line || strlen(line) == 0 || line[0] == ';') return NULL; /* Handle empty line */
 
 	cleaned_line = (char*)handle_malloc(strlen(line) + 1); /* Allocate memory for the cleaned line */
 	while (line[i] != '\0')
 	{
-		/* Stop processing at ';' if not inside quotes */
-		if (line[i] == ';' && !inside_quotes) break;
-
 		/* Toggle quote flag if encountering a quote */
 		if (line[i] == '"')
 		{
@@ -111,8 +108,6 @@ int preproc(char* file_as, char* file_am)
 	if (fptr_as == NULL)
 	{
 		print_internal_error(ERROR_FILE_OPEN_SOURCE);
-		free(file_as);
-		free(file_am);
 		return FAILURE;
 	}
 
@@ -121,8 +116,6 @@ int preproc(char* file_as, char* file_am)
 	if (fptr_am == NULL)
 	{
 		print_internal_error(ERROR_FILE_OPEN_OUTPUT);
-		free(file_as);
-		free(file_am);
 		fclose(fptr_as);
 		return FAILURE;
 	}
@@ -151,6 +144,8 @@ int preproc(char* file_as, char* file_am)
 			line[sizeof(line) - 1] = '\0'; /* Ensure null-termination */
 			free(cleaned_line); /* Free dynamically allocated cleaned line */
 			cleaned_line = NULL; /* Reset pointer to avoid dangling references */
+		}else{
+			line[0] = '\0'; /* Empty line or comment */
 		}
 
 		/* Skip empty lines */

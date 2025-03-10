@@ -167,7 +167,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
         return FAILURE;
     }
 
-    while (fgets(line, sizeof(line), fp) != NULL && IC + DC < MAX_MEMORY_SIZE) {
+    while (fgets(line, sizeof(line), fp) != NULL) {
         line_count++; /* Increment the line counter */
 
         memset(label, '\0', sizeof(label)); /* Clear the label buffer */

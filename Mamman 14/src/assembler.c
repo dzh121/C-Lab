@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
         return FAILURE;
     }
 
-    printf("\n======================= STARTING ASSEMBLER =======================\n");
+    printf("======================= STARTING ASSEMBLER =======================\n");
     printf("Total files to process: %d\n", argc - 1);
     printf("=================================================================\n");
 
@@ -48,11 +48,12 @@ int main(int argc, char *argv[]) {
         /* Generate file paths for .am and .as files */
         file_am = add_suffix(preproc_file, ".am");
         file_as = add_suffix(preproc_file, ".as");
-        if (!file_am || !file_as) {
+        if (!file_am || !file_as || strlen(file_am) >= MAX_FILENAME_LENGTH || strlen(file_as) >= MAX_FILENAME_LENGTH) {
             print_ext_error(ERROR_MEMORY_ALLOCATION, input_file, -1);
             cleanup_resources(&ICF, &DCF, label_head, &data_list, &instruction_list, &file_am, &file_as);
             continue;
         }
+
         /* Step 1: Preprocessing */
         printf("\n------------------ Step 1: Preprocessing %s ------------------\n", file_as);
         if (preproc(file_as, file_am)) {
@@ -112,21 +113,19 @@ int main(int argc, char *argv[]) {
 
 void cleanup_resources(int **ICF, int **DCF, label_table *label_head, DataList *data_list,
                        InstructionList *instruction_list, char **file_am, char **file_as) {
-    /* Free memory and reset pointers */
+    /* Free resources */
     if (*ICF) {
         free(*ICF);
         *ICF = NULL;
     }
-    if (DCF) {
+    if (*DCF) {
         free(*DCF);
         *DCF = NULL;
     }
-    if (label_head)
-        free_label_list(label_head);
-    if (data_list)
-        free_data_list(data_list);
-    if (instruction_list)
-        free_instruction_list(instruction_list);
+    if (label_head) free_label_list(label_head);
+    if (data_list) free_data_list(data_list);
+    if (instruction_list) free_instruction_list(instruction_list);
+
     if (*file_am) {
         free(*file_am);
         *file_am = NULL;
