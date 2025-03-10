@@ -746,6 +746,7 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 	int i = 0; /* Index for the buffer */
 	int length = 0; /* Length of the number */
 	char* endptr; /* Pointer to the end of the number */
+	int tempNum; /* Temporary number */
 
 	if (!line || !num)
 	{
@@ -769,7 +770,7 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 		{
 			/* Invalid character in number */
 			print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
-			return 0; /* Indicate an error occurred */
+			return 0;
 		}
 		buffer[i++] = *line++;
 		length++;
@@ -782,11 +783,26 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 	{
 		/* No valid digits after sign or empty buffer */
 		print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
-		return 0; /* Indicate an error occurred */
+		return 0;
+	}
+
+	if (strlen(buffer) > 8) /* Check if the number is too long */
+	{
+		print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_number);
+		return 0;
 	}
 
 	/* Convert the extracted string to an integer */
-	*num = strtol(buffer, &endptr, 10);
+	tempNum = strtol(buffer, &endptr, 10);
+
+	/* Check for invalid range */
+	if (tempNum > MAX_IMMEDIATE_VALUE || tempNum < MIN_IMMEDIATE_VALUE)
+	{
+		print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_number);
+		return 0;
+	}
+
+	*num = tempNum; /* Store the parsed number */
 
 	/* Ensure full parsing without leftover characters */
 	if (*endptr != '\0')
@@ -795,7 +811,7 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 		return 0;
 	}
 
-	return length; /* Indicate success */
+	return length; /* success */
 }
 
 char* skipSpaces(char* line)

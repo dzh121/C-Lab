@@ -10,6 +10,12 @@
 #define MAX_FILENAME_LENGTH 100 /* Maximum file name length */
 #define MAX_MEMORY_SIZE 2097151 /* Maximum memory size (2^21 - 1) */
 
+#define MAX_IMMEDIATE_VALUE 1048575 /* 21-bit signed integer range 3 bits for ARE */
+#define MIN_IMMEDIATE_VALUE -1048576 /* 21-bit signed integer range 3 bits for ARE */
+
+#define MAX_DATA_VALUE 8388607  /* Maximum data value (24 bits) */
+#define MIN_DATA_VALUE -8388608 /* Minimum data value (24 bits) */
+
 #define WORD_LENGTH 24 /* Word length in bits */
 
 #define INITIAL_IC 100 /* Initial value for the instruction counter */
@@ -21,10 +27,9 @@
  * SUCCESS (0) indicates a successful operation.
  * FAILURE (1) indicates an error occurred.
  */
-typedef enum
-{
-	SUCCESS = 0,
-	FAILURE = 1
+typedef enum {
+    SUCCESS = 0,
+    FAILURE = 1
 } Status;
 
 /**
@@ -37,14 +42,14 @@ typedef enum
  * REGISTER_DIRECT (4) - Register direct access.
  * EXTERNAL (5) - External label referencing.
  */
-typedef enum
-{
-	UNKNOWN = 0, /* Represents an uninitialized mode or cases where the mode is irrelevant (e.g., stop instruction, PRN destination mode) */
-	IMMEDIATE = 1,
-	DIRECT = 2,
-	RELATIVE = 3,
-	REGISTER_DIRECT = 4,
-	EXTERNAL = 5
+typedef enum {
+    UNKNOWN = 0,
+    /* Represents an uninitialized mode or cases where the mode is irrelevant (stop instruction, PRN destination mode, ...) */
+    IMMEDIATE = 1,
+    DIRECT = 2,
+    RELATIVE = 3,
+    REGISTER_DIRECT = 4,
+    EXTERNAL = 5
 } AddressingMode;
 
 /**
@@ -55,12 +60,11 @@ typedef enum
  * ENTRY - Label is marked for external reference in output.
  * EXTERN - Label is declared as external.
  */
-typedef enum
-{
-	CODE,
-	DATA,
-	ENTRY,
-	EXTERN
+typedef enum {
+    CODE,
+    DATA,
+    ENTRY,
+    EXTERN
 } LabelType;
 
 
@@ -69,11 +73,10 @@ typedef enum
  *
  * Each node stores a memory address and its corresponding data value.
  */
-typedef struct DataNode
-{
-	int address; /* Memory address */
-	int data; /* Data value */
-	struct DataNode* next; /* Pointer to the next node */
+typedef struct DataNode {
+    int address; /* Memory address */
+    int data; /* Data value */
+    struct DataNode *next; /* Pointer to the next node */
 } DataNode;
 
 /**
@@ -81,9 +84,8 @@ typedef struct DataNode
  *
  * A linked list of `DataNode` elements representing the stored data.
  */
-typedef struct
-{
-	DataNode* head; /* Pointer to the first node */
+typedef struct {
+    DataNode *head; /* Pointer to the first node */
 } DataList;
 
 /**
@@ -92,19 +94,18 @@ typedef struct
  * Contains the instruction name, opcode, function code, addressing modes,
  * operands, and additional details such as the source and destination labels.
  */
-typedef struct
-{
-	char* name; /* Instruction name (add, mov, etc.) */
-	int opcode; /* Bits 23-18: Operation code */
-	int funct; /* Bits 7-3: Sub-function code */
-	int src_mode; /* Bits 17-16: Source addressing mode */
-	int src_operand; /* Bits 15-13: Source register or operand */
-	int dest_mode; /* Bits 12-11: Destination addressing mode */
-	int dest_operand; /* Bits 10-8: Destination register or operand */
-	int are; /* Bits 2-0: A, R, E bits (Absolute, Relocatable, External) */
-	char src_label[MAX_LINE_LENGTH]; /* Label name for source operand */
-	char dest_label[MAX_LINE_LENGTH]; /* Label name for destination operand */
-	int line_number; /* Line number in the source file */
+typedef struct {
+    char *name; /* Instruction name (add, mov, etc.) */
+    int opcode; /* Bits 23-18: Operation code */
+    int funct; /* Bits 7-3: Sub-function code */
+    int src_mode; /* Bits 17-16: Source addressing mode */
+    int src_operand; /* Bits 15-13: Source register or operand */
+    int dest_mode; /* Bits 12-11: Destination addressing mode */
+    int dest_operand; /* Bits 10-8: Destination register or operand */
+    int are; /* Bits 2-0: A, R, E bits (Absolute, Relocatable, External) */
+    char src_label[MAX_LINE_LENGTH]; /* Label name for source operand */
+    char dest_label[MAX_LINE_LENGTH]; /* Label name for destination operand */
+    int line_number; /* Line number in the source file */
 } Instruction;
 
 
@@ -113,10 +114,9 @@ typedef struct
  *
  * Each node stores an `Instruction` structure and a pointer to the next node.
  */
-typedef struct InstructionNode
-{
-	Instruction instruction; /* Instruction data */
-	struct InstructionNode* next; /* Pointer to the next instruction in the list */
+typedef struct InstructionNode {
+    Instruction instruction; /* Instruction data */
+    struct InstructionNode *next; /* Pointer to the next instruction in the list */
 } InstructionNode;
 
 /**
@@ -125,10 +125,9 @@ typedef struct InstructionNode
  * Contains pointers to the head and tail of the instruction list
  * to allow efficient insertion at the end.
  */
-typedef struct
-{
-	InstructionNode* head; /* Head of the instruction list */
-	InstructionNode* tail; /* Tail of the instruction list for easy append */
+typedef struct {
+    InstructionNode *head; /* Head of the instruction list */
+    InstructionNode *tail; /* Tail of the instruction list for easy append */
 } InstructionList;
 
 /**
@@ -136,9 +135,9 @@ typedef struct
  *
  * Used for tracking multiple occurrences of a label in the source code.
  */
-typedef struct ADDRESS_LIST{
-	int addr; /* address */
-	struct ADDRESS_LIST *next; /* pointer to the next node */
+typedef struct ADDRESS_LIST {
+    int addr; /* address */
+    struct ADDRESS_LIST *next; /* pointer to the next node */
 } ADDRESS_LIST;
 
 
@@ -149,12 +148,12 @@ typedef struct ADDRESS_LIST{
  * the label is referenced (for external labels).
  */
 typedef struct label_table {
-	char name[MAX_LABEL_SIZE]; /* Label name */
-	int addr; /* Address (0 if unresolved, resolved during second pass) */
-	int line; /* Line number */
-	LabelType type; /* Type of label (CODE, DATA, ENTRY, EXTERN) */
-	ADDRESS_LIST *addr_list; /* List of all usage addresses for EXTERN */
-	struct label_table *next; /* Pointer to the next node */
+    char name[MAX_LABEL_SIZE]; /* Label name */
+    int addr; /* Address (0 if unresolved, resolved during second pass) */
+    int line; /* Line number */
+    LabelType type; /* Type of label (CODE, DATA, ENTRY, EXTERN) */
+    ADDRESS_LIST *addr_list; /* List of all usage addresses for EXTERN */
+    struct label_table *next; /* Pointer to the next node */
 } label_table;
 
 
