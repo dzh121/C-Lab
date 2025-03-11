@@ -206,13 +206,15 @@ int preproc(char* file_as, char* file_am)
 				did_fail = TRUE;
 				free(macro_content);
 				macro_content = NULL;
+				memset(macro_name, '\0', sizeof(macro_name));
 				continue;
 			}
 
 			/* Free macro_name and macro_content after adding */
 			free(macro_content);
-			memset(macro_name, '\0', sizeof(macro_name));
 			macro_content = NULL;
+			memset(macro_name, '\0', sizeof(macro_name));
+
 			content_size = 0;
 			continue;
 		}
@@ -226,6 +228,7 @@ int preproc(char* file_as, char* file_am)
 			{
 				free(macro_content);
 				macro_content = NULL;
+				memset(macro_name, '\0', sizeof(macro_name));
 				print_internal_error(ERROR_MEMORY_REALLOCATION);
 				did_fail = TRUE;
 				continue;

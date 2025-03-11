@@ -218,7 +218,7 @@ int first_pass(char *file_name, DataList *data_list, InstructionList *instructio
             after_label++; /* Move past the white space */
 
             /* Check if there is a label with no directive or instruction */
-            if (after_label == NULL || *after_label == '\0') {
+            if (!after_label || !*after_label || *after_label == '\n'){
                 print_ext_error(ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION, file_name, line_count);
                 did_fail = TRUE;
                 continue;
