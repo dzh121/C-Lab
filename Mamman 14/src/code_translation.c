@@ -268,6 +268,11 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 	else if (inst->src_mode == DIRECT)
 	{
 		/* We default as direct we will check if it is external */
+		if (strlen(inst->src_label) > MAX_LABEL_SIZE)
+		{
+			print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
+			return FAILURE;
+		}
 		label = search_label_list(label_head, inst->src_label); /* Find label */
 
 		if (!label)
@@ -313,6 +318,12 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 	}
 	else if (inst->dest_mode == DIRECT)
 	{
+		/* Check if the label is too long */
+		if (strlen(inst->dest_label) > MAX_LABEL_SIZE)
+		{
+			print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
+			return FAILURE;
+		}
 		/* We default as direct we will check if it is external */
 		label = search_label_list(label_head, inst->dest_label); /* Find label */
 
@@ -356,29 +367,30 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 int parse_instruction(char* line, InstructionList* instruction_list, char* file_name, int line_number)
 {
 	char name[MAX_LINE_LENGTH]; /* Instruction Name */
-	char label[MAX_LINE_LENGTH]; /* Label Name */
-	int number_length = 0; /* Length of the number */
 	Instruction* inst = handle_malloc(sizeof(Instruction)); /* Allocate memory for the instruction */
 	Instruction* found_inst; /* Found instruction */
 
 	/* Extract the Instruction Name */
-	line = getWord(line, name); /* Get the instruction name */
+	line = getWord(line, name);
 
-	/* Find the instruction */
+	/* Find and copy the instruction */
 	found_inst = find_operation(name);
 	if (!found_inst)
 	{
 		print_ext_error(ERROR_INSTRUCTION_NOT_FOUND, file_name, line_number);
 		free(inst);
-		inst = NULL;
 		return FAILURE;
 	}
 
-	/* Copy the found instruction */
-	memset(inst, 0, sizeof(Instruction));
-	memcpy(inst, found_inst, sizeof(Instruction));
+	/* Copy the instruction data */
+	memcpy(inst, found_inst, sizeof(Instruction)); /* Copy the instruction data */
+	inst->line_number = line_number; /* Set the line number */
+	memset(inst->src_label, 0, MAX_LINE_LENGTH); /* Clear the source label */
+	memset(inst->dest_label, 0, MAX_LINE_LENGTH); /* Clear the destination label */
+	inst->src_mode = UNKNOWN; /* Set the source mode to UNKNOWN */
+	inst->dest_mode = UNKNOWN; /* Set the destination mode to UNKNOWN */
 
-	/* Check for illegal comma */
+	/* Check for illegal comma at start */
 	if (*line == ',')
 	{
 		print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
@@ -389,259 +401,160 @@ int parse_instruction(char* line, InstructionList* instruction_list, char* file_
 	/* Skip spaces */
 	line = skipSpaces(line);
 
-	memset(inst->src_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
-	memset(inst->dest_label, 0, MAX_LINE_LENGTH); /* Clear previous labels */
-
-	inst->src_mode = UNKNOWN; /* Default to UNKNOWN */
-	inst->dest_mode = UNKNOWN; /* Default to UNKNOWN */
-	inst->line_number = line_number;
-
 	switch (inst->opcode)
 	{
 	/* Instructions with No Operands */
-	case 14: /* rts */
-	case 15: /* stop */
+	case OPCODE_RTS:
+	case OPCODE_STOP:
+		/* Check for extraneous text */
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
+
 	/* Instructions with One Operand */
-	case 5: /* clr */
-	case 9: /* jmp */
-	case 12: /* red */
-	case 13: /* prn */
-		/* Parse Source Operand */
-		MISSING_PARM(line[0], file_name, line_number);
-
-	/* Check for illegal comma */
-		if (line[0] == ',')
+	case OPCODE_CLR:
+	case OPCODE_JMP:
+	case OPCODE_RED:
+	case OPCODE_PRN:
+		/* Parse the operand */
+		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) ==
+			FAILURE)
 		{
-			print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
 			free(inst);
-			inst = NULL;
 			return FAILURE;
 		}
-
-	/* Parse Source Operand */
-		if (line[0] == '#')
-		{
-			/* Immediate Value */
-			inst->dest_mode = IMMEDIATE;
-
-			/* Parse the number */
-			number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
-			if (number_length == 0)
-			{
-				free(inst);
-				inst = NULL;
-				return FAILURE;
-			}
-			/* Move to the next part of the string */
-			line += (1 + number_length);
-		}
-		else if (line[0] == '&')
-		{
-			/* Relative Address */
-			inst->dest_mode = RELATIVE;
-			line++; /* Move past the '&' */
-			/* Get the label */
-			line = getWord(line, label);
-			/* Copy the label */
-			strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
-		}
-		else if (line[0] == 'r')
-		{
-			inst->dest_mode = REGISTER_DIRECT;
-			if (!isdigit(line[1]))
-			{
-				print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			if (line[2] && isdigit(line[2]))
-			{
-				print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			inst->dest_operand = atoi(line + 1);
-			line += 2;
-		}
-		else if (isdigit(line[0]))
-		{
-			print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-			free(inst);
-			inst = NULL;
-			return FAILURE;
-		}
-		else
-		{
-			inst->dest_mode = DIRECT;
-			line = getWord(line, label);
-			strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
-		}
+		/* Check for extraneous text */
 		line = skipSpaces(line);
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
 
 	/* Instructions with Two Operands */
 	default:
-		MISSING_PARM(line[0], file_name, line_number);
-
-	/* Parse Source Operand */
-		if (line[0] == '#')
+		/* Parse the source operand */
+		if (parse_operand(&line, &inst->src_mode, &inst->src_operand, inst->src_label, file_name, line_number) ==
+			FAILURE)
 		{
-			/* Immediate Value */
-			inst->src_mode = IMMEDIATE;
-			/* Parse the number */
-			number_length = getNum(line + 1, &inst->src_operand, file_name, line_number);
-			if (number_length == 0)
-			{
-				free(inst);
-				return FAILURE;
-			}
-			/* Move to the next part of the string */
-			line += 1 + number_length;
-		}
-		else if (line[0] == '&')
-		{
-			/* Relative Address */
-			inst->src_mode = RELATIVE;
-			/* Move past the '&' */
-			line++;
-			/* Get the label */
-			line = getWord(line, label);
-			/* Copy the label */
-			strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
-		}
-		else if (line[0] == 'r')
-		{
-			inst->src_mode = REGISTER_DIRECT;
-			if (!isdigit(line[1]))
-			{
-				print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			if (line[2] && isalnum(line[2]))
-			{
-				print_ext_error(ERROR_INVALID_SOURCE_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			inst->src_operand = atoi(line + 1);
-			line += 2;
-		}
-		else if (isalpha(line[0]) || line[0] == '_')
-		{
-			/* Check if the first character is a letter or underscore */
-			/* Direct Address */
-			inst->src_mode = DIRECT;
-			/* Get the label */
-			line = getWord(line, label);
-			/* Copy the label*/
-			strncpy(inst->src_label, label, MAX_LINE_LENGTH - 1);
-		}
-		else
-		{
-			if (line[0] == ',')
-				print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
-			else
-				print_ext_error(ERROR_INVALID_SOURCE_OPERAND, file_name, line_number);
+			/* Free the instruction */
 			free(inst);
-			inst = NULL;
 			return FAILURE;
 		}
+		/* Skip spaces */
 		line = skipSpaces(line);
-	/* check for ',' */
+
 		if (*line != ',')
 		{
+			/* Check for missing comma */
 			print_ext_error(ERROR_MISSING_COMMA, file_name, line_number);
 			free(inst);
 			return FAILURE;
 		}
-	/* Move to the next part of the string */
+		/* Skip the comma */
 		line = skipSpaces(line + 1);
 
-	/* Check for missing parm */
-		MISSING_PARM(line[0], file_name, line_number);
-
-	/* Parse Destination Operand */
-		if (line[0] == '#')
+		/* Parse the destination operand */
+		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) ==
+			FAILURE)
 		{
-			/* Immediate Value */
-			inst->dest_mode = IMMEDIATE;
-			/* Parse the number */
-			number_length = getNum(line + 1, &inst->dest_operand, file_name, line_number);
-			/* Check for invalid number */
-			if (number_length == 0)
-			{
-				free(inst);
-				return FAILURE;
-			}
-			/* Move to the next part of the string */
-			line += 1 + number_length;
-		}
-		else if (line[0] == '&')
-		{
-			/* Relative Address */
-			inst->dest_mode = RELATIVE;
-			/* Move past the '&' */
-			line++;
-			/* Get the label */
-			line = getWord(line, label);
-			/* Copy the label */
-			strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
-		}
-		else if (line[0] == 'r')
-		{
-			/* Register Direct */
-			inst->dest_mode = REGISTER_DIRECT;
-			/* Check if the register is valid */
-			if (!isdigit(line[1]))
-			{
-				print_ext_error(ERROR_INVALID_DESTINATION_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			/* Check for invalid register */
-			if (line[2] && isalnum(line[2]))
-			{
-				print_ext_error(ERROR_INVALID_DESTINATION_REGISTER, file_name, line_number);
-				free(inst);
-				return FAILURE;
-			}
-			/* Get the register number */
-			inst->dest_operand = atoi(line + 1);
-			line += 2;
-		}
-		else if (isalpha(line[0]) || line[0] == '_')
-		{
-			/* Check if the first character is a letter or underscore */
-			/* Direct Address */
-			inst->dest_mode = DIRECT;
-			/* Get the label */
-			line = getWord(line, label);
-			/* Copy the label*/
-			strncpy(inst->dest_label, label, MAX_LINE_LENGTH - 1);
-		}
-		else
-		{
-			if (line[0] == ',')
-				print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
-			else
-				print_ext_error(ERROR_INVALID_DESTINATION_OPERAND, file_name, line_number);
+			/* Free the instruction */
 			free(inst);
-			inst = NULL;
 			return FAILURE;
 		}
+		/* Skip spaces */
 		line = skipSpaces(line);
-	/* Check for extraneous text */
+		/* Check for extraneous text */
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
 	}
-	/* Add the instruction to the list */
+
+	/* Add the instruction to the instruction list */
 	add_instruction(instruction_list, inst);
-	/* Free the instruction */
 	free(inst);
+	return SUCCESS;	/* Return success */
+}
+
+int parse_operand(char** line, int* mode, int* operand, char* label, char* file_name, int line_number)
+{
+	int number_length = 0; /* Length of the number */
+	char temp_label[MAX_LINE_LENGTH]; /* Temporary label */
+	int reg_num; /* Register number */
+
+	/* Check for NULL pointers */
+	if (!(*line)[0])
+	{
+		/* Missing operand */
+		print_ext_error(ERROR_MISSING_OPERAND, file_name, line_number);
+		return FAILURE;
+	}
+
+	if ((*line)[0] == ',')
+	{
+		/* Illegal comma */
+		print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
+		return FAILURE;
+	}
+	if ((*line)[0] == '#')
+	{
+		/* Immediate Value */
+		*mode = IMMEDIATE;
+		number_length = getNum(*line + 1, operand, file_name, line_number);
+		if (number_length == 0) return FAILURE;
+		*line += (1 + number_length);
+	}
+	else if ((*line)[0] == '&')
+	{
+		/* Relative Address */
+		*mode = RELATIVE;
+		/* Skip the '&' */
+		(*line)++;
+		/* Parse the label */
+		*line = getWord(*line, temp_label);
+		/* Copy the label */
+		strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
+		/* Null-terminate the label */
+		label[MAX_LINE_LENGTH - 1] = '\0';
+	}
+	else if ((*line)[0] == 'r' && isdigit((*line)[1]))
+	{
+		/* Register Direct or Direct */
+		reg_num = atoi(*line + 1);
+		if (reg_num > 7)
+		{
+			/* Not a Register but a Direct */
+			*mode = DIRECT;
+			/* Parse the label */
+			*line = getWord(*line, temp_label);
+			/* Copy the label */
+			strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
+			/* Null-terminate the label */
+			label[MAX_LINE_LENGTH - 1] = '\0';
+		}
+		else
+		{
+			/* Register Direct */
+			*mode = REGISTER_DIRECT;
+			/* Set the operand */
+			*operand = reg_num;
+			/* Skip the r and  number */
+			*line += 2;
+		}
+	}
+	else if (isalpha((*line)[0])) /* Label */
+	{
+		/* Direct Address */
+		*mode = DIRECT;
+		/* Parse the label */
+		*line = getWord(*line, temp_label);
+		/* Copy the label */
+		strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
+		/* Null-terminate the label */
+		label[MAX_LINE_LENGTH - 1] = '\0';
+	}
+	else
+	{
+		/* Invalid operand */
+		print_ext_error(ERROR_INVALID_OPERAND, file_name, line_number);
+		return FAILURE;
+	}
+
 	return SUCCESS;
 }
 
@@ -656,63 +569,63 @@ int validate_addressing_modes(Instruction* inst, char* file_name, int line_numbe
 	/* Validate opcode-based addressing mode constraints */
 	switch (inst->opcode)
 	{
-		case 1: /* cmp */
-			if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
-				!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 0: /* mov */
-		case 2: /* add, sub */
-			if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
-				!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 4: /* lea */
-			if (!(inst->src_mode == DIRECT) || !(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 5: /* clr, not, inc, dec */
-		case 12: /* red */
-			if (!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 9: /* jmp, bne, jsr */
-			if (!(inst->dest_mode == DIRECT || inst->dest_mode == RELATIVE))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 13: /* prn */
-			if (!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
-			{
-				print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		case 14: /* rts */
-		case 15: /* stop */
-			if (inst->src_mode != UNKNOWN || inst->dest_mode != UNKNOWN)
-			{
-				print_ext_error(ERROR_EXTRA_OPERANDS, file_name, line_number);
-				return FAILURE;
-			}
-			break;
-		default:
-			print_ext_error(ERROR_INVALID_OPCODE, file_name, line_number);
+	case 1: /* cmp */
+		if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
+			!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
 			return FAILURE;
+		}
+		break;
+	case 0: /* mov */
+	case 2: /* add, sub */
+		if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
+			!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	case 4: /* lea */
+		if (!(inst->src_mode == DIRECT) || !(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	case 5: /* clr, not, inc, dec */
+	case 12: /* red */
+		if (!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	case 9: /* jmp, bne, jsr */
+		if (!(inst->dest_mode == DIRECT || inst->dest_mode == RELATIVE))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	case 13: /* prn */
+		if (!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
+		{
+			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	case 14: /* rts */
+	case 15: /* stop */
+		if (inst->src_mode != UNKNOWN || inst->dest_mode != UNKNOWN)
+		{
+			print_ext_error(ERROR_EXTRA_OPERANDS, file_name, line_number);
+			return FAILURE;
+		}
+		break;
+	default:
+		print_ext_error(ERROR_INVALID_OPCODE, file_name, line_number);
+		return FAILURE;
 	}
 
 	return SUCCESS; /* Valid addressing modes */

@@ -13,6 +13,21 @@
 #define MAX_OPCODE 15 /* Maximum opcode value (4-bit encoding) */
 #define MAX_FUNCT 4   /* Maximum funct value (2-bit encoding) */
 
+#define OPCODE_RTS 14 /* RTS opcode value */
+#define OPCODE_STOP 15 /* STOP opcode value */
+#define OPCODE_CLR 5 /* CLR, NOT, DEC opcode value */
+#define OPCODE_JMP 9 /* JMP, BNE, JSR opcode value */
+#define OPCODE_RED 12 /* RED opcode value */
+#define OPCODE_PRN 13 /* PRN opcode value */
+
+
+#define MAX_IMMEDIATE_VALUE 1048575 /* 21-bit signed integer range 3 bits for ARE */
+#define MIN_IMMEDIATE_VALUE -1048576 /* 21-bit signed integer range 3 bits for ARE */
+
+#define MAX_DATA_VALUE 8388607  /* Maximum data value (24 bits) */
+#define MIN_DATA_VALUE -8388608 /* Minimum data value (24 bits) */
+
+
 /*
  * Macros for centralized error handling.
  * These macros ensure errors are reported consistently throughout the assembler.
@@ -180,6 +195,23 @@ int process_instruction(Instruction *inst, char *file_name, int line_number, Dat
 int parse_instruction(char *line, InstructionList *instruction_list, char *file_name, int line_number);
 
 /**
+ * @brief Parses an operand from a line of assembly code.
+ *
+ * Extracts the addressing mode and value of an operand from the given line
+ * and stores the parsed data in the provided variables.
+ *
+ * @param line Pointer to the input string containing the operand.
+ * @param mode Pointer to the variable where the addressing mode will be stored.
+ * @param operand Pointer to the variable where the operand value will be stored.
+ * @param label Pointer to the buffer where the operand label will be stored.
+ * @param file_name Name of the source file (for error reporting).
+ * @param line_number Line number of the instruction in the source file.
+ * @return int Returns 0 if parsing is successful, otherwise 1.
+ */
+int parse_operand(char **line, int *mode, int *operand, char *label, char *file_name, int line_number);
+
+
+/**
  * @brief Validates the addressing modes of an instruction.
  *
  * Checks the addressing modes of the source and destination operands
@@ -191,4 +223,6 @@ int parse_instruction(char *line, InstructionList *instruction_list, char *file_
  * @return int Returns 0 if the addressing modes are valid, otherwise 1.
  */
 int validate_addressing_modes(Instruction *inst, char *file_name, int line_number);
+
+
 #endif

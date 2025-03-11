@@ -70,6 +70,7 @@
 #define ERROR_ENTRY_CANNOT_BE_EXTERN "Entry cannot be extern"
 #define ERROR_INVALID_SOURCE_OPERAND "Invalid source operand"
 #define ERROR_INVALID_DESTINATION_OPERAND "Invalid destination operand"
+#define ERROR_INVALID_OPERAND "Invalid operand"
 
 /* General warnings */
 #define WARNING_LABEL_AT_START_ENTRY "Label at the start of .entry is meaningless"

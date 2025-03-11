@@ -22,3 +22,4 @@ mov &r1, r2
 jmp #100
 .entry LABEL3
 .extern LABEL3
+jmp &r1

@@ -65,3 +65,4 @@ jmp #100
 ; Trying to use an entry label as an extern
 .entry LABEL3
 .extern LABEL3
+

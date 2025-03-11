@@ -10,12 +10,6 @@
 #define MAX_FILENAME_LENGTH 100 /* Maximum file name length */
 #define MAX_MEMORY_SIZE 2097151 /* Maximum memory size (2^21 - 1) */
 
-#define MAX_IMMEDIATE_VALUE 1048575 /* 21-bit signed integer range 3 bits for ARE */
-#define MIN_IMMEDIATE_VALUE -1048576 /* 21-bit signed integer range 3 bits for ARE */
-
-#define MAX_DATA_VALUE 8388607  /* Maximum data value (24 bits) */
-#define MIN_DATA_VALUE -8388608 /* Minimum data value (24 bits) */
-
 #define WORD_LENGTH 24 /* Word length in bits */
 
 #define INITIAL_IC 100 /* Initial value for the instruction counter */
