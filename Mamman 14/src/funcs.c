@@ -80,11 +80,17 @@ void init_data_list(DataList *list) {
     list->head = NULL;
 }
 
-void add_data_node(DataList *list, int address, int value) {
+int add_data_node(DataList *list, int address, int value, char *file_name) {
     /* Allocate memory for the new node */
     DataNode *new_node = (DataNode *) handle_malloc(sizeof(DataNode));
     /* Create a temporary pointer */
     DataNode *current;
+    if (address > MAX_MEMORY_SIZE) {
+        handle_memory_overflow(file_name, address);
+        free(new_node);
+        return FAILURE;
+    }
+
     new_node->address = address; /* Set the address */
 
     new_node->data = value; /* Set the data */
@@ -102,6 +108,7 @@ void add_data_node(DataList *list, int address, int value) {
         new_node->next = current->next; /* Set the next pointer to the current next */
         current->next = new_node; /* Set the current next to the new node */
     }
+    return SUCCESS;
 }
 
 void free_data_list(DataList *list) {
@@ -200,15 +207,18 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
 
     /* Build the output file names */
     ob_file_name = add_suffix(file_name, ".ob");
-    ent_file_name = add_suffix(file_name, ".ent");
-    ext_file_name = add_suffix(file_name, ".ext");
 
     /* Open the object file */
     ob_fp = fopen(ob_file_name, "w");
     if (!ob_fp) {
         print_internal_error(ERROR_FILE_OPEN_OUTPUT);
+        free(ob_file_name); /* Free the object file name */
         return FAILURE;
     }
+
+    ent_file_name = add_suffix(file_name, ".ent");
+    ext_file_name = add_suffix(file_name, ".ext");
+
 
     /* Write the object file */
     fprintf(ob_fp, "%7d %d\n", ICF - INITIAL_IC, DCF); /* Write the ICF and DCF */
@@ -230,6 +240,10 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
                 if (!ent_fp) {
                     print_internal_error(ERROR_FILE_OPEN_OUTPUT);
                     fclose(ob_fp);
+                    if (ent_fp) fclose(ent_fp);
+                    if (ob_file_name) free(ob_file_name); /* Free the object file name */
+                    if (ent_file_name) free(ent_file_name); /* Free the entry file name */
+                    if (ext_file_name) free(ext_file_name); /* Free the external file name */
                     return FAILURE;
                 }
             }
@@ -248,6 +262,9 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
                         print_internal_error(ERROR_FILE_OPEN_OUTPUT);
                         fclose(ob_fp);
                         if (ent_fp) fclose(ent_fp);
+                        if (ob_file_name) free(ob_file_name); /* Free the object file name */
+                        if (ent_file_name) free(ent_file_name); /* Free the entry file name */
+                        if (ext_file_name) free(ext_file_name); /* Free the external file name */
                         return FAILURE;
                     }
                 }

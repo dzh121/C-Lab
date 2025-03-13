@@ -254,8 +254,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 	/* Build the First Word */
 	first_word = build_first_word(inst, file_name, line_number);
 
-	add_data_node(data_list, address++, (int)first_word);
-
+	if (add_data_node(data_list, address++, (int)first_word, file_name)) {
+		return FAILURE;
+	}
 	/* If either source or destination is UNKNOWN, we skip */
 	/* Process Source Operand */
 	if (inst->src_mode == IMMEDIATE)
@@ -263,7 +264,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 		/* Encode Immediate Value */
 		operand_word = encode_operand(inst->src_operand, IMMEDIATE, file_name, line_number);
 		/* Add the encoded operand to the data list */
-		add_data_node(data_list, address++, (int)operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 	else if (inst->src_mode == DIRECT)
 	{
@@ -290,7 +293,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 			/* Encode the label address */
 			operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
 		}
-		add_data_node(data_list, address++, operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 	else if (inst->src_mode == RELATIVE)
 	{
@@ -305,7 +310,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 		/* Encode the relative distance */
 		operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
 		/* Add the encoded operand to the data list */
-		add_data_node(data_list, address++, operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 
 	/* Process Destination Operand */
@@ -314,7 +321,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 		/* Encode Immediate Value */
 		operand_word = encode_operand(inst->dest_operand, IMMEDIATE, file_name, line_number);
 		/* Add the encoded operand to the data list */
-		add_data_node(data_list, address++, operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 	else if (inst->dest_mode == DIRECT)
 	{
@@ -342,7 +351,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 			/* Encode the label address */
 			operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
 		}
-		add_data_node(data_list, address++, operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 	else if (inst->dest_mode == RELATIVE)
 	{
@@ -357,7 +368,9 @@ int process_instruction(Instruction* inst, char* file_name, int line_number, Dat
 		/* Encode the relative distance */
 		operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
 		/* Add the encoded operand to the data list */
-		add_data_node(data_list, address++, operand_word);
+		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
+			return FAILURE;
+		}
 	}
 
 	return SUCCESS;

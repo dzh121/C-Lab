@@ -42,8 +42,10 @@ int is_reserved(char *line);
  * @param list Pointer to the data list.
  * @param address The memory address for the data node.
  * @param value The value to store at the specified address.
+ * @param file_name The name of the file for error reporting.
+ * @return int Returns 0 on success, otherwise 1 if an error occurs.
  */
-void add_data_node(DataList *list, int address, int value);
+int add_data_node(DataList *list, int address, int value, char *file_name);
 
 /**
  * @brief Frees all memory allocated for the data list.

@@ -11,7 +11,6 @@
 /* Memory Handling Errors */
 #define ERROR_MEMORY_ALLOCATION "Memory allocation failed"
 #define ERROR_MEMORY_REALLOCATION "Memory reallocation failed"
-#define ERROR_MEMORY_OVERFLOW "Memory overflow"
 
 /* Macro Handling Errors */
 #define ERROR_MACRO_NAME_DUP "Macro name already exist"
@@ -22,7 +21,6 @@
 #define ERROR_MACRO_NAME_RESERVED "Macro name is reserved"
 #define ERROR_EXTRANEOUS_TEXT_MCROEND "Extraneous text after 'mcroend'"
 #define ERROR_EXTRANEOUS_TEXT_MCRONAME "Extraneous text after macro name"
-#define ERROR_PREPROC_FAILED "Preprocessor failed"
 #define ERROR_EMPTY_FILE "Empty file"
 #define ERROR_MACRO_NOT_OPENED "Macro not opened"
 
@@ -31,7 +29,6 @@
 #define ERROR_LABEL_INVALID "Label is invalid"
 #define ERROR_LABEL_RESERVED "Label is reserved"
 #define ERROR_LABEL_DUP "Label already exists"
-#define ERROR_FIRST_PASS_FAILED "First pass failed"
 #define ERROR_INVALID_INSTRUCTION "Invalid instruction"
 #define ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION "Label with no directive or instruction"
 #define ERROR_INVALID_DATA "Invalid data directive"
@@ -63,13 +60,9 @@
 /* Second Pass Errors */
 #define ERROR_UNDEFINED_SOURCE_LABEL "Undefined source label"
 #define ERROR_UNDEFINED_DEST_LABEL "Undefined destination label"
-#define ERROR_ENTRY_FAILED "Failed to handle entry"
 #define ERROR_ENTRY_LABEL_NOT_FOUND "Entry label not found"
-#define ERROR_SECOND_PASS_FAILED "Second pass failed"
 #define ERROR_MISSING_ENTRY_NAME "Missing entry name"
 #define ERROR_ENTRY_CANNOT_BE_EXTERN "Entry cannot be extern"
-#define ERROR_INVALID_SOURCE_OPERAND "Invalid source operand"
-#define ERROR_INVALID_DESTINATION_OPERAND "Invalid destination operand"
 #define ERROR_INVALID_OPERAND "Invalid operand"
 
 /* General warnings */
@@ -91,6 +84,18 @@
  * @param error_message The error message to display.
  */
 void print_internal_error(char *error_message);
+
+/**
+ * @brief Handles memory overflow errors.
+ *
+ * This function is called when a memory overflow error is detected.
+ * It logs the error details, including the file name where the overflow
+ * occurred and the address at which the overflow was detected.
+ *
+ * @param file_name The name of the file where the memory overflow occurred.
+ * @param overflow_address The address at which the memory overflow was detected.
+ */
+void handle_memory_overflow(char* file_name, int overflow_address);
 
 /**
  * @brief Prints an error message related to a specific file and line.
@@ -117,5 +122,6 @@ void print_ext_error(char *error_message, char *file_name, int line_number);
  * @param line_number The line number where the warning was found.
  */
 void print_ext_warning(char *warning_message, char *file_name, int line_number);
+
 
 #endif
