@@ -38,8 +38,14 @@ int main(int argc, char *argv[]) {
 
         /* Allocate memory for the instruction and data counters */
         ICF = (int *) handle_malloc(sizeof(int));
+        if (!ICF) {
+            continue;
+        }
         DCF = (int *) handle_malloc(sizeof(int));
-
+        if (!DCF) {
+            free(ICF);
+            continue;
+        }
         /* Initialize data structures */
         init_data_list(&data_list);
         init_instruction_list(&instruction_list);

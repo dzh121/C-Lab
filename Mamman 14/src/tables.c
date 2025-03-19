@@ -3,6 +3,9 @@
 ADDRESS_LIST *build_address_node(int addr) {
     /* Allocate memory for the new node */
     ADDRESS_LIST *node = (ADDRESS_LIST *)handle_malloc(sizeof(ADDRESS_LIST));
+    if (!node) {
+        return NULL; /* Memory allocation failed */
+    }
     node->addr = addr; /* Set the address */
     node->next = NULL; /* Set the next pointer to NULL */
     return node; /* Return the new node */
@@ -40,6 +43,9 @@ label_table *search_label_list(label_table *head, char *name) {
 label_table *build_label(char *name, int addr, int line, LabelType type) {
     /* Allocate memory for the new label */
     label_table *new_label = (label_table *)handle_malloc(sizeof(label_table));
+    if (!new_label) {
+        return NULL; /* Memory allocation failed */
+    }
     /* Copy the name */
     strcpy(new_label->name, name);
     new_label->addr = addr; /* Set the address */
@@ -98,7 +104,9 @@ void init_instruction_list(InstructionList *list) {
 /* Add an instruction to the list */
 void add_instruction(InstructionList *list, Instruction *inst) {
     InstructionNode *new_node = handle_malloc(sizeof(InstructionNode)); /* Allocate memory for the new node */
-
+    if (!new_node) {
+        return;
+    }
     /* Copy the instruction data */
     memcpy(&new_node->instruction, inst, sizeof(Instruction));
     new_node->next = NULL;

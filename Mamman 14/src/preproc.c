@@ -8,6 +8,8 @@ char* remove_white_spaces(char* line)
 	if (!line || strlen(line) == 0 || line[0] == ';') return NULL; /* Handle empty line */
 
 	cleaned_line = (char*)handle_malloc(strlen(line) + 1); /* Allocate memory for the cleaned line */
+	if (!cleaned_line) return NULL; /* Memory allocation failed */
+
 	while (line[i] != '\0')
 	{
 		/* Toggle quote flag if encountering a quote */
@@ -177,6 +179,11 @@ int preproc(char* file_as, char* file_am)
 
 			/* Allocate initial memory for macro content */
 			macro_content = handle_malloc(1);
+			if (!macro_content)
+			{
+				did_fail = TRUE;
+				continue;
+			}
 			macro_content[0] = '\0';
 			content_size = 0;
 			continue;

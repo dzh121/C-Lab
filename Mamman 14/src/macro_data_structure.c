@@ -4,17 +4,25 @@
 macro_node *build_node(char *name, char *content, int line) {
     /* Allocate memory for the new node */
     macro_node *new_node = (macro_node *) handle_malloc(sizeof(macro_node));
+    if (!new_node) {
+        return NULL;  /* Caller handles NULL, frees if needed */
+    }
 
     /* Allocate memory and copy name */
-    new_node->name = (char *) handle_malloc(strlen(name) + 1); /* +1 for '\0' */
-
-    /* Copy the name string */
+    new_node->name = (char *) handle_malloc(strlen(name) + 1);
+    if (!new_node->name) {
+        free(new_node); /* Clean up previously allocated memory */
+        return NULL;
+    }
     strcpy(new_node->name, name);
 
     /* Allocate memory and copy content */
-    new_node->content = (char *) handle_malloc(strlen(content) + 1); /* +1 for '\0' */
-
-    /* Copy the content string */
+    new_node->content = (char *) handle_malloc(strlen(content) + 1);
+    if (!new_node->content) {
+        free(new_node->name);
+        free(new_node);
+        return NULL;
+    }
     strcpy(new_node->content, content);
 
     /* Set line and next pointer */

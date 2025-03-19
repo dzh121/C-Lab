@@ -17,7 +17,6 @@ void *handle_malloc(long size) {
     void *ptr = malloc(size);
     if (!ptr) {
         print_internal_error(ERROR_MEMORY_ALLOCATION);
-        exit(1);
     }
     return ptr;
 }
@@ -25,6 +24,9 @@ void *handle_malloc(long size) {
 char *add_suffix(char *file_name, char *suffix) {
     /* Allocate memory for the new name */
     char *new_name = (char *) handle_malloc(strlen(file_name) + strlen(suffix) + 1);
+    if (!new_name) {
+        return NULL;
+    }
     /* Copy the file name */
     strcpy(new_name, file_name);
     strcat(new_name, suffix);
@@ -83,6 +85,9 @@ void init_data_list(DataList *list) {
 int add_data_node(DataList *list, int address, int value, char *file_name) {
     /* Allocate memory for the new node */
     DataNode *new_node = (DataNode *) handle_malloc(sizeof(DataNode));
+    if (!new_node) {
+        return FAILURE;
+    }
     /* Create a temporary pointer */
     DataNode *current;
     if (address > MAX_MEMORY_SIZE) {
@@ -204,7 +209,9 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
     ADDRESS_LIST *current_address = NULL; /* Address list current pointer */
     int has_entries = FALSE, has_externals = FALSE; /* Flags for entry and external files */
     char *hexValue = (char *) handle_malloc(7); /* Hexadecimal value buffer */
-
+    if (!hexValue) {
+        return FAILURE;
+    }
     /* Build the output file names */
     ob_file_name = add_suffix(file_name, ".ob");
 
@@ -302,12 +309,13 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
 void print_data_list(DataList *list) {
     DataNode *current = list->head;
     char *hexValue = (char *) handle_malloc(7);
+    if (!hexValue) {
+        return;
+    }
     while (current) {
         sprintf(hexValue, "%06x", current->data & 0xFFFFFF);
         printf("%04d %s\n", current->address, hexValue);
         current = current->next;
     }
-    if (hexValue) {
-        free(hexValue);
-    }
+    free(hexValue);
 }
