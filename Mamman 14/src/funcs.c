@@ -85,11 +85,13 @@ void init_data_list(DataList *list) {
 int add_data_node(DataList *list, int address, int value, char *file_name) {
     /* Allocate memory for the new node */
     DataNode *new_node = (DataNode *) handle_malloc(sizeof(DataNode));
+    DataNode *current;
+
     if (!new_node) {
         return FAILURE;
     }
     /* Create a temporary pointer */
-    DataNode *current;
+
     if (address > MAX_MEMORY_SIZE) {
         handle_memory_overflow(file_name, address);
         free(new_node);

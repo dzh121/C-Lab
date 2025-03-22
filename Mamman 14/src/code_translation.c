@@ -381,10 +381,11 @@ int parse_instruction(char* line, InstructionList* instruction_list, char* file_
 {
 	char name[MAX_LINE_LENGTH]; /* Instruction Name */
 	Instruction* inst = handle_malloc(sizeof(Instruction)); /* Allocate memory for the instruction */
+	Instruction* found_inst; /* Found instruction */
+
 	if (!inst) {
 		return FAILURE;
 	}
-	Instruction* found_inst; /* Found instruction */
 
 	/* Extract the Instruction Name */
 	line = getWord(line, name);
