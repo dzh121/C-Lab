@@ -5,98 +5,82 @@ char* remove_white_spaces(char* line)
 	int i = 0, j = 0, inside_quotes = 0; /* Indexes and flags */
 	char* cleaned_line; /* Cleaned line buffer */
 
-	if (!line || strlen(line) == 0 || line[0] == ';') return NULL; /* Handle empty line */
+	if (!line || strlen(line) == 0 || line[0] == ';') return NULL; /* skip empty or comment lines */
 
-	cleaned_line = (char*)handle_malloc(strlen(line) + 1); /* Allocate memory for the cleaned line */
-	if (!cleaned_line) return NULL; /* Memory allocation failed */
+	cleaned_line = (char*)handle_malloc(strlen(line) + 1); /* alloc space for cleaned string */
+	if (!cleaned_line) return NULL;
 
 	while (line[i] != '\0')
 	{
-		/* Toggle quote flag if encountering a quote */
-		if (line[i] == '"')
+		if (line[i] == '"') /* toggle flag if we enter/exit quotes */
 		{
 			inside_quotes = !inside_quotes;
 			cleaned_line[j++] = line[i++];
 			continue;
 		}
 
-		/* Handle non-space characters or characters inside quotes */
-		if (!isspace(line[i]) || inside_quotes)
+		if (!isspace(line[i]) || inside_quotes) /* keep char if not a space or if inside quotes */
 		{
 			cleaned_line[j++] = line[i++];
 		}
-		/* Handle spaces outside quotes */
-		else if (j > 0 && !isspace(cleaned_line[j - 1]))
+		else if (j > 0 && !isspace(cleaned_line[j - 1])) /* add a single space if last wasn’t a space */
 		{
-			cleaned_line[j++] = ' '; /* Add a single space */
-			while (isspace(line[i])) i++; /* Skip consecutive spaces */
+			cleaned_line[j++] = ' ';
+			while (isspace(line[i])) i++; /* skip any extra spaces */
 		}
-		/* Skip leading spaces */
 		else
 		{
-			i++;
+			i++; /* skip leading or repeated spaces */
 		}
 	}
 
-	/* Remove trailing spaces */
-	while (j > 0 && (isspace(cleaned_line[j - 1])))
-	{
-		j--;
-	}
-	/* Null-terminate the cleaned line */
-	cleaned_line[j] = '\0';
+	while (j > 0 && (isspace(cleaned_line[j - 1]))) j--; /* remove trailing space */
+	cleaned_line[j] = '\0'; /* null-terminate the string */
 	return cleaned_line;
 }
 
 int isValidName(char* name, int line, char* file_name)
 {
-	/* Check if the macro name is empty */
-	if (!name || name[0] == '\0' || name[0] == '\n')
+	if (!name || name[0] == '\0' || name[0] == '\n') /* empty macro name */
 	{
 		print_ext_error(ERROR_MACRO_NO_NAME, file_name, line);
 		return FAILURE;
 	}
 
-	/* Check if the macro name is too long */
-	if (strlen(name) > MAX_LABEL_SIZE)
+	if (strlen(name) > MAX_LABEL_SIZE) /* too long */
 	{
 		print_ext_error(ERROR_MACRO_TOO_LONG, file_name, line);
 		return FAILURE;
 	}
 
-	/* Check if the macro name is invalid */
-	if (isdigit(name[0]))
+	if (isdigit(name[0])) /* starts with number */
 	{
 		print_ext_error(ERROR_MACRO_NAME_INVALID, file_name, line);
 		return FAILURE;
 	}
 
-	/* Check if the macro name is reserved */
-	if (is_reserved(name))
+	if (is_reserved(name)) /* reserved keyword */
 	{
 		print_ext_error(ERROR_MACRO_NAME_RESERVED, file_name, line);
 		return FAILURE;
 	}
 
-	return SUCCESS; /* Valid name */
+	return SUCCESS; /* valid name */
 }
 
 int getLineLength(char* line)
 {
-	int i = 0; /* Index */
-	/* Loop through the line */
-	while (line[i] != '\0' && line[i] != '\n')
-	{
-		i++; /* Increment index */
-	}
-	return i; /* Return the line length */
+	int i = 0; /* index counter */
+	while (line[i] != '\0' && line[i] != '\n') i++; /* count till end or newline */
+	return i; /* return the length */
 }
 
 /* Preprocessor function to handle macro expansion */
 int preproc(char* file_as, char* file_am)
 {
 	FILE *fptr_as, *fptr_am; /* File pointers for source and output files */
-	char macro_name[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH * 2]; /* Buffers for macro name and line times 2 to check if too long */
+	char macro_name[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH * 2];
+	/* Buffers for macro name and line times 2 to check if too long */
 	char *macro_content = NULL, *cleaned_line = NULL, *temp = NULL;
 	/* Pointers for dynamic content and temporary values */
 	char *after_mcroend = NULL, *after_mcroname = NULL; /* Pointers for text after 'mcroend' and macro name */
@@ -145,7 +129,9 @@ int preproc(char* file_as, char* file_am)
 			line[sizeof(line) - 1] = '\0'; /* Ensure null-termination */
 			free(cleaned_line); /* Free dynamically allocated cleaned line */
 			cleaned_line = NULL; /* Reset pointer to avoid dangling references */
-		}else{
+		}
+		else
+		{
 			line[0] = '\0'; /* Empty line or comment */
 		}
 
@@ -257,7 +243,6 @@ int preproc(char* file_as, char* file_am)
 			macro_content[content_size] = '\0';
 			continue;
 		}
-
 
 
 		macro_found = search_list(head, line); /* Search for macro in the list */

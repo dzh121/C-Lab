@@ -1,42 +1,39 @@
 #include "../headers/assembler.h"
 
 int main(int argc, char *argv[]) {
-    int file_index; /* Index of the current file being processed */
-    char *input_file; /* Name of the input file */
-    char preproc_file[MAX_FILENAME_LENGTH]; /* Preprocessed file name */
-    int *ICF, *DCF; /* Final instruction and data counters */
-    DataList data_list; /* List of data directives */
-    InstructionList instruction_list; /* List of instructions */
-    label_table *label_head; /* Head of the label table */
-    char *file_am = NULL, *file_as = NULL; /* File paths for .am and .as files */
-    int total_success = 0; /* Total number of files processed successfully */
-    int did_fail = FALSE; /* Flag to indicate if any errors occurred */
+    int file_index; /* which file we're on */
+    char *input_file; /* current file name */
+    char preproc_file[MAX_FILENAME_LENGTH]; /* name of the file after preprocessing */
+    int *ICF, *DCF; /* counters we'll use later */
+    DataList data_list; /* where data stuff goes */
+    InstructionList instruction_list; /* same, but for instructions */
+    label_table *label_head; /* start of the label list */
+    char *file_am = NULL, *file_as = NULL; /* .am is preprocessed, .as is original */
+    int total_success = 0; /* count how many files actually worked */
+    int did_fail = FALSE; /* flag to know if something broke */
 
-    /* Check for input files */
+    /* need at least one file */
     if (argc < 2) {
         fprintf(stderr, "ERROR: No input files provided\n");
         return FAILURE;
     }
 
     printf("======================= STARTING ASSEMBLER =======================\n");
-    printf("Total files to process: %d\n", argc - 1);
-    printf("=================================================================\n");
+    printf("                    Total files to process: %d\n", argc - 1);
+    printf("==================================================================\n");
 
-    /* Process each input file */
+    /* loop through all given files */
     for (file_index = 1; file_index < argc; file_index++) {
-        /* Get the input file name */
-        input_file = argv[file_index];
-        /* Copy the input file name to the preprocessor file name */
-        strncpy(preproc_file, input_file, sizeof(preproc_file) - 1);
-        /* Add a null terminator to the preprocessor file name */
-        preproc_file[sizeof(preproc_file) - 1] = '\0';
+        input_file = argv[file_index]; /* grab filename */
+        strncpy(preproc_file, input_file, sizeof(preproc_file) - 1); /* copy it */
+        preproc_file[sizeof(preproc_file) - 1] = '\0'; /* always null terminate */
 
-        printf("\n=================================================================\n");
+        printf("\n==================================================================\n");
         printf("                 Processing File %d of %d: %s                 \n",
                file_index, argc - 1, input_file);
-        printf("==================================================================\n");
+        printf("===================================================================\n");
 
-        /* Allocate memory for the instruction and data counters */
+        /* get space for counters */
         ICF = (int *) handle_malloc(sizeof(int));
         if (!ICF) {
             continue;
@@ -46,21 +43,23 @@ int main(int argc, char *argv[]) {
             free(ICF);
             continue;
         }
-        /* Initialize data structures */
+
+        /* setup all lists/tables to be empty */
         init_data_list(&data_list);
         init_instruction_list(&instruction_list);
         label_head = NULL;
 
-        /* Generate file paths for .am and .as files */
+        /* add suffixes like .as and .am */
         file_am = add_suffix(preproc_file, ".am");
         file_as = add_suffix(preproc_file, ".as");
+        /* check if we got the memory and file length's */
         if (!file_am || !file_as || strlen(file_am) >= MAX_FILENAME_LENGTH || strlen(file_as) >= MAX_FILENAME_LENGTH) {
             print_ext_error(ERROR_MEMORY_ALLOCATION, input_file, -1);
             cleanup_resources(&ICF, &DCF, label_head, &data_list, &instruction_list, &file_am, &file_as);
             continue;
         }
 
-        /* Step 1: Preprocessing */
+        /* Step 1: run the preprocessor */
         printf("\n------------------ Step 1: Preprocessing %s ------------------\n", file_as);
         if (preproc(file_as, file_am)) {
             printf("Step 1 Complete: Preprocessor failed for %s\n", file_as);
@@ -86,10 +85,10 @@ int main(int argc, char *argv[]) {
                 printf("Step 3 Complete: Second pass done successfully for %s\n", file_am);
             }
         }
-        /* Increment the total success count */
+
+        /* if all good, move on to building the output files */
         if (!did_fail)
         {
-            /* Step 4: Build Output Files */
             printf("\n------------------ Step 4: Building Output Files %s ------------------\n", input_file);
             if (!did_fail && build_output_files(input_file, &data_list, label_head, *ICF, *DCF)) {
                 printf("Step 4 Complete: Failed to create output files for %s\n", input_file);
@@ -99,27 +98,29 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        /* Cleanup resources */
+        /* wrap it up */
         if (did_fail)
             printf("\n=============== Failed to process file: %s ===============\n", file_as);
         else
             printf("\n=============== File: %s Processed Successfully ===============\n", file_as);
 
         cleanup_resources(&ICF, &DCF, label_head, &data_list, &instruction_list, &file_am, &file_as);
-        did_fail = FALSE; /* Reset the failure flag */
+        did_fail = FALSE; /* reset flag for next file */
     }
 
-    /* Final summary */
-    printf("\n=================================================================\n");
-    printf("        %d of %d files processed successfully.        \n", total_success, argc - 1);
-    printf("=================================================================\n");
+    /* all done */
+    printf("\n==================================================================\n");
+    printf("               %d of %d files processed successfully.        \n", total_success, argc - 1);
+    printf("==================================================================\n");
 
     return SUCCESS;
 }
 
 void cleanup_resources(int **ICF, int **DCF, label_table *label_head, DataList *data_list,
-                       InstructionList *instruction_list, char **file_am, char **file_as) {
-    /* Free resources */
+                       InstructionList *instruction_list, char **file_am, char **file_as)
+{
+    /* free everything we allocated in assembler.c */
+
     if (*ICF) {
         free(*ICF);
         *ICF = NULL;

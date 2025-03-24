@@ -309,6 +309,7 @@ int build_output_files(char *file_name, DataList *data_list, label_table *label_
 }
 
 void print_data_list(DataList *list) {
+    /* Debug print the data list */
     DataNode *current = list->head;
     char *hexValue = (char *) handle_malloc(7);
     if (!hexValue) {

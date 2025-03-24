@@ -1,220 +1,207 @@
 #include "../headers/first_pass.h"
 
-int encode_string(char* line, int* DC, int IC, DataList* data_list, char* file_name, int line_count)
+int encode_string(char* line, int* DC, DataList* data_list, char* file_name, int line_count)
 {
-	char *start, *end; /* Pointers for the start and end of the string */
-	char* after_string; /* Pointer for checking extra text */
+	char *start, *end; /* used to find the quotes */
+	char* after_string; /* to check if someone wrote junk after the string */
 
 	if (!line)
 	{
-		/* No line found */
 		print_ext_error(ERROR_STRING_MISSING_QUOTES, file_name, line_count);
 		return FAILURE;
 	}
 
-	start = strchr(line, '"'); /* Find the first quote */
+	start = strchr(line, '"'); /* look for the first " */
 	if (!start)
 	{
-		/* No opening quote found */
 		print_ext_error(ERROR_STRING_MISSING_QUOTES, file_name, line_count);
 		return FAILURE;
 	}
 
-	start++; /* Move past the opening quote */
-	end = strchr(start, '"'); /* Find the closing quote */
+	start++; /* skip past the opening quote */
+	end = strchr(start, '"'); /* look for the second " */
 
 	if (!end)
 	{
-		/* No closing quote found */
 		print_ext_error(ERROR_STRING_MISSING_QUOTES, file_name, line_count);
 		return FAILURE;
 	}
 
-	/* Encode each character in the string and add to the data list */
+	/* loop through each char and store it */
 	while (start < end)
 	{
-		/* Add ASCII value to the list with DC address */
 		if (add_data_node(data_list, *DC, (int)(*start), file_name))
 		{
 			return FAILURE;
 		}
-		(*DC)++; /* Increment the data counter */
-		start++; /* Move to the next character */
+		(*DC)++;
+		start++;
 	}
 
-	after_string = end + 1; /* Move past the closing quote */
-	/* Check for extra text after the string */
+	/* make sure no extra text after closing quote */
+	after_string = end + 1;
 	if (after_string && after_string[0] != '\0' && after_string[0] != '\n')
 	{
-		/* Extra text found */
 		print_ext_error(ERROR_EXTRA_TEXT, file_name, line_count);
 		return FAILURE;
 	}
 
-	/* Add null terminator to data */
+	/* add null terminator for string */
 	if (add_data_node(data_list, *DC, 0, file_name))
 	{
 		return FAILURE;
 	}
 	(*DC)++;
 
-	return SUCCESS; /* Success */
+	return SUCCESS;
 }
 
 int handle_extern(char* line, label_table** label_head, char* file_name, int line_count)
 {
-	char* token; /* Token for the external label */
-	char* after_label; /* Pointer for checking extra text */
+	char* token; /* the extern label */
+	char* after_label; /* check for extra junk */
 
 	if (!line)
 	{
-		/* No line found */
 		print_ext_error(ERROR_MISSING_EXTERNAL_NAME, file_name, line_count);
 		return FAILURE;
 	}
 
-	token = strtok(line + EXTERN_DIRECTIVE_OFFSET, " "); /* Get the first token */
+	token = strtok(line + EXTERN_DIRECTIVE_OFFSET, " "); /* grab label after .extern */
 	if (!token)
 	{
-		/* No token found */
 		print_ext_error(ERROR_MISSING_EXTERNAL_NAME, file_name, line_count);
 		return FAILURE;
 	}
 
-	/* Remove newline if present */
-	token[strcspn(token, "\n")] = '\0';
+	token[strcspn(token, "\n")] = '\0'; /* remove newline if there is one */
+
 	if (!isValidLabel(token, file_name, line_count))
 	{
-		/* Invalid label */
 		return FAILURE;
 	}
 
-	/* Check for extra text */
-	after_label = strtok(NULL, " ");
+	after_label = strtok(NULL, " "); /* see if there’s extra text */
 	if (after_label)
 	{
-		/* Extra text found */
 		print_ext_error(ERROR_EXTRA_TEXT, file_name, line_count);
 		return FAILURE;
 	}
 
-	/* Add the external label to the label table */
+	/* add the label to the list */
 	if (add_label_list(label_head, token, 0, line_count, EXTERN, file_name))
 	{
-		/* Failed to add label */
 		return FAILURE;
 	}
 
-	return SUCCESS; /* Success */
+	return SUCCESS;
 }
 
-int encode_data(char* line, int* DC, int IC, DataList* data_list, char* file_name, int line_count)
+int encode_data(char* line, int* DC, DataList* data_list, char* file_name, int line_count)
 {
-	int value; /* Parsed integer value */
-	char* ptr; /* Pointer for checking the token */
-	char* token = strtok(line + DATA_DIRECTIVE_OFFSET, ","); /* Skip '.data' and tokenize by ',' */
+	int value; /* the number */
+	char* ptr; /* for checking the number */
+	char* token = strtok(line + DATA_DIRECTIVE_OFFSET, ","); /* grab the first number */
 
 	while (token)
 	{
-		/* Trim leading and trailing spaces from the token. */
-		token = trim_whitespace(token);
+		token = trim_whitespace(token); /* clean it */
 
-		/* Ensure token is not empty after trimming. */
 		if (token[0] == '\0')
 		{
+			/* empty token */
 			print_ext_error(ERROR_INVALID_DATA, file_name, line_count);
 			return FAILURE;
 		}
 
-		/* Validate that token contains only an integer value. */
 		for (ptr = token; *ptr != '\0'; ptr++)
 		{
-			/* Check for invalid characters in the token. */
 			if (!isdigit(*ptr) && *ptr != '-' && *ptr != '+')
 			{
+				/* not a number */
 				print_ext_error(ERROR_INVALID_NUMBER, file_name, line_count);
 				return FAILURE;
 			}
 		}
 
+		/* check if it’s a valid number */
 		if (strlen(token) > 8)
 		{
-			/* Check if the number is too long */
 			print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_count);
 			return FAILURE;
 		}
 
-		/* Check if the value can be parsed correctly. */
+		/* convert to int */
 		if (sscanf(token, "%d", &value) != 1)
 		{
 			print_ext_error(ERROR_INVALID_NUMBER, file_name, line_count);
 			return FAILURE;
 		}
 
-		/* Check if the value is within the valid range. */
+		/* check if it’s in range */
 		if (value > MAX_DATA_VALUE || value < MIN_DATA_VALUE)
 		{
 			print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_count);
 			return FAILURE;
 		}
 
-		/* Add the parsed integer to the data list. */
+		/* add the number to the data list */
 		if (add_data_node(data_list, *DC, value, file_name))
 		{
 			return FAILURE;
 		}
+		/* increment the DC */
 		(*DC)++;
 
-		/* Get the next token. */
+		/* grab the next number */
 		token = strtok(NULL, ",");
 	}
 
-	return SUCCESS; /* Success */
+	return SUCCESS;
 }
-
 
 int first_pass(char* file_name, DataList* data_list, InstructionList* instruction_list, label_table** label_head,
                int* ICF, int* DCF)
 {
-	/* Initialize counters, pointers, and buffers for the first pass */
+	/* set up some counters and stuff we going to need */
 	int IC = INITIAL_IC, DC = INITIAL_DC, line_count = 0, did_fail = FALSE, label_length;
-	FILE* fp; /* File pointer for the input file */
-	char line[MAX_LINE_LENGTH], *after_label, label[MAX_LABEL_SIZE]; /* Buffers and label handling */
-	label_table* label_dummy = NULL; /* Temporary pointer for label processing */
-	DataNode* current_data = NULL; /* Pointer for traversing data nodes */
-	Instruction* inst = NULL; /* Pointer to the current instruction */
-	/* For the rest of this assembler we know there is only tailing or leading white spaces and if there are multiple white spaces they are treated as one */
+	FILE* fp; /* file pointer for reading the .am file */
+	char line[MAX_LINE_LENGTH], *after_label, label[MAX_LABEL_SIZE]; /* line buffer and label holder */
+	label_table* label_dummy = NULL; /* used to update label addresses later */
+	DataNode* current_data = NULL; /* loop over data nodes to update addresses */
+	Instruction* inst = NULL; /* current instruction */
+	/* whitespace is loose in this assembler - extra spaces don't matter */
 
-	/* Open the input file */
+	/* try opening the file */
 	if ((fp = fopen(file_name, "r")) == NULL)
 	{
 		print_internal_error(ERROR_FILE_OPEN_SOURCE);
 		return FAILURE;
 	}
 
+	/* go line by line */
 	while (fgets(line, sizeof(line), fp) != NULL)
 	{
-		line_count++; /* Increment the line counter */
+		line_count++;
 
-		memset(label, '\0', sizeof(label)); /* Clear the label buffer */
+		memset(label, '\0', sizeof(label)); /* clear label each line */
 
-		after_label = strchr(line, ':'); /*skip : and space*/
+		after_label = strchr(line, ':'); /* is there a label? */
 		if (after_label != NULL)
 		{
-			label_length = after_label - line; /* Calculate label length  dont count : */
-
-			/* Copy the label to the buffer */
+			label_length = after_label - line; /* get label length (not including :) */
 			strncpy(label, line, label_length);
-			/* Ensure null-termination */
 			label[label_length] = '\0';
 
-			/* Check if the label is valid */
+			/* check if the label is valid */
 			if (!isValidLabel(label, file_name, line_count))
 			{
 				did_fail = TRUE;
-				memset(label, '\0', sizeof(label)); /* Clear the label buffer */
+				memset(label, '\0', sizeof(label));
 				continue;
 			}
+
+			/* check if there’s extra text after the label */
 			if (*after_label != ':')
 			{
 				did_fail = TRUE;
@@ -222,9 +209,10 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 				continue;
 			}
 
-			after_label++; /* Move past ':' */
+			/* skip ':' */
+			after_label++; /* skip ':' */
 
-			/* Check for white space after the label */
+			/* check if there’s a space after the label */
 			if (!isspace(*after_label))
 			{
 				did_fail = TRUE;
@@ -232,9 +220,9 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 				continue;
 			}
 
-			after_label++; /* Move past the white space */
+			after_label++; /* skip space after label */
 
-			/* Check if there is a label with no directive or instruction */
+			/* check if there’s a directive or instruction after the label */
 			if (!after_label || !*after_label || *after_label == '\n')
 			{
 				print_ext_error(ERROR_LABEL_WITH_NO_DIRECTIVE_OR_INSTRUCTION, file_name, line_count);
@@ -244,86 +232,86 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 		}
 		else
 		{
-			after_label = line; /* No label, start from the beginning of the line */
+			after_label = line; /* no label, start from beginning */
 		}
 
+		/* check for .data */
 		if (strncmp(after_label, ".data", 5) == 0 && isspace(after_label[5]))
 		{
-			/* Encode the data */
+			/* check if there’s a label */
 			if (label[0] != '\0')
 			{
-				/* Add the label to the label table */
+				/* add the label to the list */
 				if (add_label_list(label_head, label, DC, line_count, DATA, file_name))
 				{
 					did_fail = TRUE;
 					continue;
 				}
 			}
-			/* Encode the data */
-			if (encode_data(after_label, &DC, IC, data_list, file_name, line_count))
+			/* encode the data */
+			if (encode_data(after_label, &DC, data_list, file_name, line_count))
 			{
 				did_fail = TRUE;
 				continue;
 			}
 		}
+		/* check for .string */
 		else if (strncmp(after_label, ".string", 7) == 0 && isspace(after_label[7]))
 		{
-			/* Check if there is a label */
+			/* check if there’s a label */
 			if (label[0] != '\0' && label[0] != '\n')
 			{
-				/* Add the label to the label table */
 				if (add_label_list(label_head, label, DC, line_count, DATA, file_name))
 				{
 					did_fail = TRUE;
 					continue;
 				}
 			}
-			/* Encode the string */
-			if (encode_string(after_label, &DC, IC, data_list, file_name, line_count))
+			/* encode the string */
+			if (encode_string(after_label, &DC, data_list, file_name, line_count))
 			{
 				did_fail = TRUE;
 				continue;
 			}
 		}
+		/* check for .extern */
 		else if (strncmp(after_label, ".extern", 7) == 0 && isspace(after_label[7]))
 		{
-			/* Check if there is a label */
-			if (label[0] != '\0' && label[0] != '\n')
+			/* check if there’s a label */
+			if (label[0] != '\0')
 			{
-				/* Warn about label at the start of the line */
 				print_ext_warning(WARNING_LABEL_AT_START_EXTERN, file_name, line_count);
 			}
 
-			/* Handle the extern directive */
+			/* handle the extern */
 			if (handle_extern(after_label, label_head, file_name, line_count))
 			{
 				did_fail = TRUE;
 				continue;
 			}
 		}
+		/* .entry is ignored here */
 		else if (strncmp(after_label, ".entry", 6) == 0 && isspace(after_label[6]))
 		{
-			/* Check if there is a label */
-			if (label[0] != '\0' && label[0] != '\n')
+			if (label[0] != '\0')
 			{
-				/* Warn about label at the start of the line */
 				print_ext_warning(WARNING_LABEL_AT_START_ENTRY, file_name, line_count);
 			}
-			continue; /* Ignore .entry directive we will address that in second pass */
+			continue;
 		}
+		/* if it starts with a dot but isn't one of the valid ones */
 		else if (strncmp(after_label, ".", 1) == 0)
 		{
-			/* Invalid directive (not .data .string .entry or .extern) */
 			print_ext_error(ERROR_INVALID_INSTRUCTION, file_name, line_count);
 			did_fail = TRUE;
 			continue;
 		}
 		else
 		{
-			/* Check if there is a label */
+			/* must be an instruction */
 			if (label[0] != '\0')
 			{
-				/* Add the label to the label table */
+				/* add the label to the list */
 				if (add_label_list(label_head, label, IC, line_count, CODE, file_name))
 				{
 					did_fail = TRUE;
@@ -331,56 +319,59 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 				}
 			}
 
-			/* Parse the instruction */
+			/* parse the instruction */
 			if (parse_instruction(after_label, instruction_list, file_name, line_count))
 			{
 				did_fail = TRUE;
 				continue;
 			}
-			/* Get the last instruction */
+			/* increment the IC */
 			inst = &instruction_list->tail->instruction;
-			/* Calculate the number of words for the instruction */
+			/* add the instruction length to the IC */
 			IC += calculate_words(inst, file_name, line_count);
 		}
-		/* Reset the label buffer */
+
+		/* done with this line */
 		memset(label, '\0', sizeof(label));
 	}
 
-	/* Set the final values of ICF and DCF */
+	/* save the final counter values */
 	*ICF = IC;
 	*DCF = DC;
 
-	/* Update data addresses */
+	/* Add ICF to every data address (the data address only contains data and not instructions for now) */
 	current_data = data_list->head;
 	while (current_data != NULL)
 	{
-		/* Add the ICF to the data address */
+		/* check if the address is in range */
 		if (current_data->address + *ICF > MAX_MEMORY_SIZE)
 		{
 			handle_memory_overflow(file_name, current_data->address + *ICF);
 			did_fail = TRUE;
+			/* we will assume if it cannot fit in the memory, it will be ignored because the .ob will not be built*/
 		}
 		else
 		{
+			/* add ICF to the address */
 			current_data->address += *ICF;
 		}
+		/* move to the next node */
 		current_data = current_data->next;
 	}
 
-	/* Update label addresses */
+	/* same for labels of type DATA */
 	label_dummy = *label_head;
 	while (label_dummy != NULL)
 	{
 		if (label_dummy->type == DATA)
 		{
-			/* Add the ICF to the data address */
-			label_dummy->addr = label_dummy->addr + *ICF;
+			label_dummy->addr += *ICF;
 		}
 		label_dummy = label_dummy->next;
 	}
-	/* Close the input file */
+
 	fclose(fp);
 
-
-	return did_fail ? FAILURE : SUCCESS; /* Return success if no errors occurred */
+	/* return SUCCESS only if everything went well */
+	return did_fail ? FAILURE : SUCCESS;
 }

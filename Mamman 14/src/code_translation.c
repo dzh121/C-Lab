@@ -23,111 +23,112 @@ Instruction operations[] = {
 
 Instruction* find_operation(char* name)
 {
-	int i; /* Loop index */
+	int i; /* looping through the operations list */
 
-	/* Search for the operation by name */
+	/* go over all operations until I hit NULL */
 	for (i = 0; operations[i].name != NULL; i++)
 	{
 		if (strcmp(operations[i].name, name) == 0)
 		{
-			return &operations[i]; /* Return the operation */
+			return &operations[i]; /* found it, return the pointer */
 		}
 	}
-	return NULL; /* Operation not found */
+	return NULL; /* didnt find the operation, return NULL */
 }
 
 int calculate_words(Instruction* inst, char* file_name, int line_number)
 {
-	int words = 1; /* Base instruction word is always present */
+	int words = 1; /* always at least 1 word for the instruction itself */
 
-	/* Calculate additional words for source operand */
+	/* check if the source operand needs an extra word */
 	switch (inst->src_mode)
 	{
 	case IMMEDIATE:
 	case DIRECT:
 	case RELATIVE:
-		words++;
+		words++; /* these need extra word */
 		break;
 	case REGISTER_DIRECT:
-	case UNKNOWN: /* Default to skipping for UNKNOWN */
-		break; /* No extra words needed */
+	case UNKNOWN:
+		break; /* no extra word needed */
 	default:
 		print_ext_error(ERROR_INVALID_SOURCE_ADDRESSING_MODE, file_name, line_number);
 		break;
 	}
 
-	/* Calculate additional words for destination operand */
+	/* same thing for the destination operand */
 	switch (inst->dest_mode)
 	{
 	case IMMEDIATE:
 	case DIRECT:
 	case RELATIVE:
-		words++;
+		words++; /* also need extra */
 		break;
 	case REGISTER_DIRECT:
-	case UNKNOWN: /* Default to skipping for UNKNOWN */
-		break; /* No extra words needed */
+	case UNKNOWN:
+		break; /* nope, all good */
 	default:
 		print_ext_error(ERROR_INVALID_DESTINATION_ADDRESSING_MODE, file_name, line_number);
 		break;
 	}
 
-	return words;
+	return words; /* return how many words total this instruction will use */
 }
 
 unsigned int build_first_word(Instruction* inst, char* file_name, int line_number)
 {
-	unsigned int word = 0; /* Initialize the word to zero */
-	int src_mode_after; /* Source addressing mode after encoding */
-	int dest_mode_after; /* Destination addressing mode after encoding */
-	int src_reg_after; /* Source register after encoding */
-	int dest_reg_after; /* Destination register after encoding */
+	unsigned int word = 0; /* final result, starts at 0 */
+	int src_mode_after; /* source addr mode after cleaning it up */
+	int dest_mode_after; /* same for dest */
+	int src_reg_after; /* source reg, cleaned */
+	int dest_reg_after; /* dest reg */
 
-	/* Validate Instruction Pointer */
+	/* make sure I got a valid instruction to work with */
 	if (!inst)
 	{
 		print_ext_error(ERROR_NULL_INSTRUCTION, file_name, line_number);
 		return 0;
 	}
 
-	src_reg_after = inst->src_operand; /* Default to original values */
-	dest_reg_after = inst->dest_operand; /* Default to original values */
+	src_reg_after = inst->src_operand; /* take original value */
+	dest_reg_after = inst->dest_operand; /* take original value */
 
-	/* Validate Opcode Range (6 bits, 0–MAX_OPCODE) */
+	/* opcode must be valid (in range) */
 	if (inst->opcode < 0 || inst->opcode > MAX_OPCODE)
 	{
 		print_ext_error(ERROR_INVALID_OPCODE, file_name, line_number);
 		return 0;
 	}
 
-	/* Validate Funct Range (5 bits, 0–MAX_FUNCT) */
+	/* funct too, make sure it's not out of range */
 	if (inst->funct < 0 || inst->funct > MAX_FUNCT)
 	{
 		print_ext_error(ERROR_INVALID_FUNCT, file_name, line_number);
 		return 0;
 	}
 
-	/* Validate Source Addressing Mode (2 bits, 0–4) */
+	/* check source addr mode range */
 	if (inst->src_mode < 0 || inst->src_mode > 4)
 	{
 		print_ext_error(ERROR_INVALID_SOURCE_ADDRESSING_MODE, file_name, line_number);
 		return 0;
 	}
 
-	/* Validate Destination Addressing Mode (2 bits, 0–4) */
+	/* and same for destination mode */
 	if (inst->dest_mode < 0 || inst->dest_mode > 4)
 	{
 		print_ext_error(ERROR_INVALID_DESTINATION_ADDRESSING_MODE, file_name, line_number);
 		return 0;
 	}
 
-	/* Validate ARE Bits (1, 2 ,4) */
+	/* ARE has to be 1, 2 or 4 only */
 	if (inst->are != 1 && inst->are != 2 && inst->are != 4)
 	{
 		print_ext_error(ERROR_INVALID_ARE_BITS, file_name, line_number);
 		return 0;
 	}
-	/* Normalize the source and destination registers */
+
+	/* if using register, validate its range */
 	if (inst->src_mode == REGISTER_DIRECT)
 	{
 		if (inst->src_operand < 0 || inst->src_operand > 7)
@@ -138,7 +139,7 @@ unsigned int build_first_word(Instruction* inst, char* file_name, int line_numbe
 	}
 	else
 	{
-		src_reg_after = 0;
+		src_reg_after = 0; /* not a reg, set to 0 */
 	}
 
 	if (inst->dest_mode == REGISTER_DIRECT)
@@ -154,244 +155,221 @@ unsigned int build_first_word(Instruction* inst, char* file_name, int line_numbe
 		dest_reg_after = 0;
 	}
 
-	/* Normalize the source and destination addressing modes */
+	/* now map the addr modes to bits */
 	switch (inst->src_mode)
 	{
-	case UNKNOWN: /* Unknown set to ZERO */
+	case UNKNOWN: /* just treat as 0 */
 	case IMMEDIATE:
-		src_mode_after = 0; /* Immediate Addressing Mode */
+		src_mode_after = 0;
 		break;
 	case DIRECT:
-		src_mode_after = 1; /* Direct Addressing Mode */
+		src_mode_after = 1;
 		break;
 	case RELATIVE:
-		src_mode_after = 2; /* Relative Addressing Mode */
+		src_mode_after = 2;
 		break;
 	case REGISTER_DIRECT:
-		src_mode_after = 3; /* Register Direct Addressing Mode */
+		src_mode_after = 3;
 		break;
 	default:
 		print_ext_error(ERROR_INVALID_SOURCE_ADDRESSING_MODE, file_name, line_number);
 		return 0;
 	}
+
 	switch (inst->dest_mode)
 	{
-	case UNKNOWN: /* Unknown set to ZERO */
+	case UNKNOWN:
 	case IMMEDIATE:
-		dest_mode_after = 0; /* Immediate Addressing Mode */
+		dest_mode_after = 0;
 		break;
 	case DIRECT:
-		dest_mode_after = 1; /* Direct Addressing Mode */
+		dest_mode_after = 1;
 		break;
 	case RELATIVE:
-		dest_mode_after = 2; /* Relative Addressing Mode */
+		dest_mode_after = 2;
 		break;
 	case REGISTER_DIRECT:
-		dest_mode_after = 3; /* Register Direct Addressing Mode */
+		dest_mode_after = 3;
 		break;
 	default:
 		print_ext_error(ERROR_INVALID_DESTINATION_ADDRESSING_MODE, file_name, line_number);
 		return 0;
 	}
-	word |= (inst->opcode & 0x3F) << 18; /* Opcode (6 bits) */
-	word |= (src_mode_after & 0x3) << 16; /* Source Addressing Mode (2 bits) */
-	word |= (src_reg_after & 0x7) << 13; /* Source Register (3 bits) */
-	word |= (dest_mode_after & 0x3) << 11; /* Destination Addressing Mode (2 bits) */
-	word |= (dest_reg_after & 0x7) << 8; /* Destination Register (3 bits) */
-	word |= (inst->funct & 0x1F) << 3; /* Funct (5 bits) */
-	word |= (inst->are & 0x7); /*(3 bits) ARE bits */
-	return word;
+
+	/* now finally build the full 24-bit word */
+	word |= (inst->opcode & 0x3F) << 18; /* 6 bits for opcode */
+	word |= (src_mode_after & 0x3) << 16; /* 2 bits src addr mode */
+	word |= (src_reg_after & 0x7) << 13; /* 3 bits src reg */
+	word |= (dest_mode_after & 0x3) << 11; /* 2 bits dest addr mode */
+	word |= (dest_reg_after & 0x7) << 8; /* 3 bits dest reg */
+	word |= (inst->funct & 0x1F) << 3; /* 5 bits funct */
+	word |= (inst->are & 0x7); /* last 3 bits are ARE */
+
+	return word; /* send it back */
 }
 
 unsigned int encode_operand(int operand, int type, char* file_name, int line_number)
 {
-	unsigned int word = 0; /* Initialize the word to zero */
+	unsigned int word = 0; /* starting with 0 */
 
 	switch (type)
 	{
-	case IMMEDIATE: /* Immediate Value (e.g., #5) */
-		word |= 4; /* ARE = A (4), Bits 2–0 */
-		word |= ((operand & 0x1FFFFF) << 3); /* Immediate value in Bits 3–23 */
+	case IMMEDIATE:
+		/* immediate value like #5 */
+		word |= 4; /* ARE is 4 for absolute */
+		word |= ((operand & 0x1FFFFF) << 3); /* shove the number into the upper bits */
 		break;
-	case DIRECT: /* Label Address (e.g., 130) */
-		word |= 2; /* ARE = R (2), Bits 2–0 */
-		word |= ((operand & 0x1FFFFF) << 3); /* Address in Bits 3–23 */
+	case DIRECT:
+		/* like a label that already got an address */
+		word |= 2; /* ARE = 2 for relocatable */
+		word |= ((operand & 0x1FFFFF) << 3); /* store the address */
 		break;
-	case RELATIVE: /* Relative Distance (e.g., &MAIN with distance 5) */
-		word |= 4; /* ARE = A (4), Bits 2–0 */
-		word |= ((operand & 0x1FFFFF) << 3); /* Distance in Bits 3–23 */
+	case RELATIVE:
+		/* label but calculated from here, like &MAIN */
+		word |= 4; /* still absolute */
+		word |= ((operand & 0x1FFFFF) << 3); /* store the distance */
 		break;
-	case EXTERNAL: /* External Symbol */
-		word |= 1; /* ARE = E (1), Bits 2–0 */
-		word |= (0 << 3); /* Value is all zeros */
+	case EXTERNAL:
+		/* external label from another file */
+		word |= 1; /* ARE = 1 for external */
+		word |= (0 << 3); /* rest is zero for externals */
 		break;
 	default:
 		print_ext_error(ERROR_INVALID_OPERAND_TYPE, file_name, line_number);
 		return 0;
 	}
-	return word;
+	return word; /* send it back */
 }
 
 int process_instruction(Instruction* inst, char* file_name, int line_number, DataList* data_list,
                         label_table* label_head, int address)
 {
-	unsigned int first_word = 0; /* Initialize the first word to zero */
-	unsigned int operand_word = 0; /* Initialize the operand word to zero */
-	label_table* label; /* Label pointer */
-	int relative_distance; /* Relative distance between labels */
-	int original_address = address; /* Original address for relative distance */
+	unsigned int first_word = 0; /* main instruction word */
+	unsigned int operand_word = 0; /* will be used for each operand if needed */
+	label_table* label; /* to hold pointer to label we find */
+	int relative_distance; /* used when doing &label things */
+	const int original_address = address; /* save for relative calcs */
+	int i; /* loop counter */
+	int mode; /* current addressing mode */
+	int operand; /* current operand value */
+	char* label_name; /* current label name */
 
+	/* make sure I got a valid instruction to work with */
 	if (!inst)
 	{
 		print_ext_error(ERROR_NULL_INSTRUCTION, file_name, line_number);
 		return FAILURE;
 	}
 
+	/* validate the addressing modes */
 	if (validate_addressing_modes(inst, file_name, line_number))
 	{
 		return FAILURE;
 	}
-	/* Build the First Word */
+
+	/* build the first word of the instruction */
 	first_word = build_first_word(inst, file_name, line_number);
 
-	if (add_data_node(data_list, address++, (int)first_word, file_name)) {
+	/* add it to the data list */
+	if (add_data_node(data_list, address++, (int)first_word, file_name))
+	{
 		return FAILURE;
 	}
-	/* If either source or destination is UNKNOWN, we skip */
-	/* Process Source Operand */
-	if (inst->src_mode == IMMEDIATE)
-	{
-		/* Encode Immediate Value */
-		operand_word = encode_operand(inst->src_operand, IMMEDIATE, file_name, line_number);
-		/* Add the encoded operand to the data list */
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
-			return FAILURE;
-		}
-	}
-	else if (inst->src_mode == DIRECT)
-	{
-		/* We default as direct we will check if it is external */
-		if (strlen(inst->src_label) > MAX_LABEL_SIZE)
-		{
-			print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
-			return FAILURE;
-		}
-		label = search_label_list(label_head, inst->src_label); /* Find label */
 
-		if (!label)
-		{
-			print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
-			return FAILURE;
-		}
-		if (label->type == EXTERN)
-		{
-			operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
-			add_address_to_label(label, address); /* Add the address to the label */
-		}
-		else
-		{
-			/* Encode the label address */
-			operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
-		}
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
-			return FAILURE;
-		}
-	}
-	else if (inst->src_mode == RELATIVE)
+	/* go over both src and dest operands */
+	for (i = 0; i < 2; i++)
 	{
-		label = search_label_list(label_head, inst->src_label); /* Find label */
-		if (!label)
-		{
-			print_ext_error(ERROR_UNDEFINED_SOURCE_LABEL, file_name, line_number);
-			return FAILURE;
-		}
-		/* Calculate relative distance */
-		relative_distance = label->addr - original_address;
-		/* Encode the relative distance */
-		operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
-		/* Add the encoded operand to the data list */
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
-			return FAILURE;
-		}
-	}
+		/* pick the right mode and operand */
+		mode = (i == 0) ? inst->src_mode : inst->dest_mode;
+		operand = (i == 0) ? inst->src_operand : inst->dest_operand;
+		label_name = (i == 0) ? inst->src_label : inst->dest_label;
 
-	/* Process Destination Operand */
-	if (inst->dest_mode == IMMEDIATE)
-	{
-		/* Encode Immediate Value */
-		operand_word = encode_operand(inst->dest_operand, IMMEDIATE, file_name, line_number);
-		/* Add the encoded operand to the data list */
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
-			return FAILURE;
-		}
-	}
-	else if (inst->dest_mode == DIRECT)
-	{
-		/* Check if the label is too long */
-		if (strlen(inst->dest_label) > MAX_LABEL_SIZE)
-		{
-			print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
-			return FAILURE;
-		}
-		/* We default as direct we will check if it is external */
-		label = search_label_list(label_head, inst->dest_label); /* Find label */
+		if (mode == UNKNOWN || mode == REGISTER_DIRECT)
+			continue; /* skip if nothing to encode or register handled in first word */
 
-		if (!label)
+
+		if (mode == IMMEDIATE)
 		{
-			print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
-			return FAILURE;
+			/* immediate value like #5 build word*/
+			operand_word = encode_operand(operand, IMMEDIATE, file_name, line_number);
 		}
-		if (label->type == EXTERN)
+		else if (mode == DIRECT)
 		{
-			operand_word = 1; /* ARE = 1, rest zero for EXTERNAL */
-			add_address_to_label(label, address);
+			/* like a label that already got an address */
+			if (strlen(label_name) > MAX_LABEL_SIZE)
+			{
+				/* label too long */
+				print_ext_error(ERROR_LABEL_TOO_LONG, file_name, line_number);
+				return FAILURE;
+			}
+			/* find the label in the list */
+			label = search_label_list(label_head, label_name);
+			/* check if label exists */
+			if (!label)
+			{
+				/* label not found */
+				print_ext_error(i == 0 ? ERROR_UNDEFINED_SOURCE_LABEL : ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
+				return FAILURE;
+			}
+
+			/* label found, encode it */
+			if (label->type == EXTERN)
+			{
+				/* external label */
+				operand_word = encode_operand(0, EXTERNAL, file_name, line_number);
+				add_address_to_label(label, address);
+			}
+			else
+			{
+				/* regular label */
+				operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
+			}
 		}
-		else
+		else if (mode == RELATIVE)
 		{
-			/* Encode the label address */
-			operand_word = encode_operand(label->addr, DIRECT, file_name, line_number);
+			/* label but calculated from here, like &MAIN */
+			/* find the label in the list */
+			label = search_label_list(label_head, label_name);
+
+			/* check if label exists */
+			if (!label)
+			{
+				print_ext_error(i == 0 ? ERROR_UNDEFINED_SOURCE_LABEL : ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
+				return FAILURE;
+			}
+
+			/* label found, calculate the distance */
+			relative_distance = label->addr - original_address;
+			/* encode it */
+			operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
 		}
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
-			return FAILURE;
-		}
-	}
-	else if (inst->dest_mode == RELATIVE)
-	{
-		label = search_label_list(label_head, inst->dest_label); /* Find label */
-		if (!label)
+
+		/* add the operand to the data list */
+		if (add_data_node(data_list, address++, (int)operand_word, file_name))
 		{
-			print_ext_error(ERROR_UNDEFINED_DEST_LABEL, file_name, line_number);
-			return FAILURE;
-		}
-		/* Calculate relative distance */
-		relative_distance = label->addr - original_address;
-		/* Encode the relative distance */
-		operand_word = encode_operand(relative_distance, RELATIVE, file_name, line_number);
-		/* Add the encoded operand to the data list */
-		if (add_data_node(data_list, address++, (int)operand_word, file_name)) {
 			return FAILURE;
 		}
 	}
 
-	return SUCCESS;
+	return SUCCESS; /* all good */
 }
-
 
 int parse_instruction(char* line, InstructionList* instruction_list, char* file_name, int line_number)
 {
-	char name[MAX_LINE_LENGTH]; /* Instruction Name */
-	Instruction* inst = handle_malloc(sizeof(Instruction)); /* Allocate memory for the instruction */
-	Instruction* found_inst; /* Found instruction */
+	char name[MAX_LINE_LENGTH]; /* gonna store the instruction name here */
+	Instruction* inst = handle_malloc(sizeof(Instruction)); /* need space for a new instruction */
+	Instruction* found_inst; /* to hold the matching operation from list */
 
-	if (!inst) {
-		return FAILURE;
+	if (!inst)
+	{
+		return FAILURE; /* couldn’t allocate, just fail */
 	}
 
-	/* Extract the Instruction Name */
-	line = getWord(line, name);
+	memset(inst, 0, sizeof(Instruction)); /* zero out everything just in case */
 
-	/* Find and copy the instruction */
-	found_inst = find_operation(name);
+	line = getWord(line, name); /* grab the instruction name from the line */
+
+	found_inst = find_operation(name); /* try to find it in our list */
 	if (!found_inst)
 	{
 		print_ext_error(ERROR_INSTRUCTION_NOT_FOUND, file_name, line_number);
@@ -399,175 +377,149 @@ int parse_instruction(char* line, InstructionList* instruction_list, char* file_
 		return FAILURE;
 	}
 
-	/* Copy the instruction data */
-	memcpy(inst, found_inst, sizeof(Instruction)); /* Copy the instruction data */
-	inst->line_number = line_number; /* Set the line number */
-	memset(inst->src_label, 0, MAX_LINE_LENGTH); /* Clear the source label */
-	memset(inst->dest_label, 0, MAX_LINE_LENGTH); /* Clear the destination label */
-	inst->src_mode = UNKNOWN; /* Set the source mode to UNKNOWN */
-	inst->dest_mode = UNKNOWN; /* Set the destination mode to UNKNOWN */
+	memcpy(inst, found_inst, sizeof(Instruction)); /* copy the operation data into our instance */
+	inst->line_number = line_number; /* save the line it came from */
+	memset(inst->src_label, 0, MAX_LINE_LENGTH); /* clear any junk */
+	memset(inst->dest_label, 0, MAX_LINE_LENGTH);
+	inst->src_mode = UNKNOWN; /* don’t know the addressing mode yet */
+	inst->dest_mode = UNKNOWN;
 
-	/* Check for illegal comma at start */
 	if (*line == ',')
 	{
+		/* line starts with a comma? not allowed */
 		print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
 		free(inst);
 		return FAILURE;
 	}
 
-	/* Skip spaces */
-	line = skipSpaces(line);
+	line = skipSpaces(line); /* skip to the real stuff */
 
 	switch (inst->opcode)
 	{
-	/* Instructions with No Operands */
 	case OPCODE_RTS:
 	case OPCODE_STOP:
-		/* Check for extraneous text */
+		/* these have no operands at all */
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
 
-	/* Instructions with One Operand */
 	case OPCODE_CLR:
 	case OPCODE_JMP:
 	case OPCODE_RED:
 	case OPCODE_PRN:
-		/* Parse the operand */
-		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) ==
-			FAILURE)
+		/* just one operand for these */
+		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) == FAILURE)
 		{
 			free(inst);
 			return FAILURE;
 		}
-		/* Check for extraneous text */
-		line = skipSpaces(line);
+		line = skipSpaces(line); /* check if anything left after */
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
 
-	/* Instructions with Two Operands */
 	default:
-		/* Parse the source operand */
-		if (parse_operand(&line, &inst->src_mode, &inst->src_operand, inst->src_label, file_name, line_number) ==
-			FAILURE)
+		/* two operands version */
+		if (parse_operand(&line, &inst->src_mode, &inst->src_operand, inst->src_label, file_name, line_number) == FAILURE)
 		{
-			/* Free the instruction */
 			free(inst);
 			return FAILURE;
 		}
-		/* Skip spaces */
+
 		line = skipSpaces(line);
 
 		if (*line != ',')
 		{
-			/* Check for missing comma */
 			print_ext_error(ERROR_MISSING_COMMA, file_name, line_number);
 			free(inst);
 			return FAILURE;
 		}
-		/* Skip the comma */
-		line = skipSpaces(line + 1);
 
-		/* Parse the destination operand */
-		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) ==
-			FAILURE)
+		line = skipSpaces(line + 1); /* skip comma */
+
+		if (parse_operand(&line, &inst->dest_mode, &inst->dest_operand, inst->dest_label, file_name, line_number) == FAILURE)
 		{
-			/* Free the instruction */
 			free(inst);
 			return FAILURE;
 		}
-		/* Skip spaces */
+
 		line = skipSpaces(line);
-		/* Check for extraneous text */
 		EXTRANEOUS_TEXT(*line, file_name, line_number);
 		break;
 	}
 
-	/* Add the instruction to the instruction list */
-	add_instruction(instruction_list, inst);
-	free(inst);
-	return SUCCESS;	/* Return success */
+	add_instruction(instruction_list, inst); /* push it to list */
+	free(inst); /* no need to keep local copy */
+	return SUCCESS;
 }
 
 int parse_operand(char** line, int* mode, int* operand, char* label, char* file_name, int line_number)
 {
-	int number_length = 0; /* Length of the number */
-	char temp_label[MAX_LINE_LENGTH]; /* Temporary label */
-	int reg_num; /* Register number */
+	int number_length = 0; /* for counting digits */
+	char temp_label[MAX_LINE_LENGTH]; /* just a buffer to hold parsed label */
+	int reg_num; /* register number if its a register */
 
-	/* Check for NULL pointers */
+	/* check for NULL pointers */
 	if (!(*line)[0])
 	{
-		/* Missing operand */
 		print_ext_error(ERROR_MISSING_OPERAND, file_name, line_number);
 		return FAILURE;
 	}
 
 	if ((*line)[0] == ',')
 	{
-		/* Illegal comma */
+		/* got a comma, not allowed here */
 		print_ext_error(ERROR_ILLEGAL_COMMA, file_name, line_number);
 		return FAILURE;
 	}
+
 	if ((*line)[0] == '#')
 	{
-		/* Immediate Value */
+		/* got an immediate value */
 		*mode = IMMEDIATE;
 		number_length = getNum(*line + 1, operand, file_name, line_number);
-		if (number_length == 0) return FAILURE;
-		*line += (1 + number_length);
+
+		if (number_length == 0) return FAILURE; /* error with the number */
+
+		*line += (1 + number_length); /* skip the whole thing */
 	}
 	else if ((*line)[0] == '&')
 	{
-		/* Relative Address */
+		/* relative label like &SOMETHING */
 		*mode = RELATIVE;
-		/* Skip the '&' */
 		(*line)++;
-		/* Parse the label */
-		*line = getWord(*line, temp_label);
-		/* Copy the label */
-		strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
-		/* Null-terminate the label */
-		label[MAX_LINE_LENGTH - 1] = '\0';
+		*line = getWord(*line, temp_label); /* get the label */
+		strncpy(label, temp_label, MAX_LINE_LENGTH - 1); /* copy it */
+		label[MAX_LINE_LENGTH - 1] = '\0'; /* make sure it's null-terminated */
 	}
 	else if ((*line)[0] == 'r' && isdigit((*line)[1]))
 	{
-		/* Register Direct or Direct */
-		reg_num = atoi(*line + 1);
+		reg_num = atoi(*line + 1); /* get the number after 'r' */
+
 		if (reg_num > 7)
 		{
-			/* Not a Register but a Direct */
+			/* not a real register, probably a label like r9XYZ */
 			*mode = DIRECT;
-			/* Parse the label */
-			*line = getWord(*line, temp_label);
-			/* Copy the label */
-			strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
-			/* Null-terminate the label */
-			label[MAX_LINE_LENGTH - 1] = '\0';
+			*line = getWord(*line, temp_label); /* get the label */
+			strncpy(label, temp_label, MAX_LINE_LENGTH - 1); /* copy it */
+			label[MAX_LINE_LENGTH - 1] = '\0'; /* make sure it's null-terminated */
 		}
 		else
 		{
-			/* Register Direct */
+			/* it's a real register */
 			*mode = REGISTER_DIRECT;
-			/* Set the operand */
 			*operand = reg_num;
-			/* Skip the r and  number */
 			*line += 2;
 		}
 	}
-	else if (isalpha((*line)[0])) /* Label */
+	else if (isalpha((*line)[0]))
 	{
-		/* Direct Address */
+		/* got a label like MAIN */
 		*mode = DIRECT;
-		/* Parse the label */
 		*line = getWord(*line, temp_label);
-		/* Copy the label */
 		strncpy(label, temp_label, MAX_LINE_LENGTH - 1);
-		/* Null-terminate the label */
 		label[MAX_LINE_LENGTH - 1] = '\0';
 	}
 	else
 	{
-		/* Invalid operand */
 		print_ext_error(ERROR_INVALID_OPERAND, file_name, line_number);
 		return FAILURE;
 	}
@@ -579,14 +531,16 @@ int validate_addressing_modes(Instruction* inst, char* file_name, int line_numbe
 {
 	if (!inst)
 	{
+		/* no instruction? can’t check anything */
 		print_ext_error(ERROR_NULL_INSTRUCTION, file_name, line_number);
 		return FAILURE;
 	}
 
-	/* Validate opcode-based addressing mode constraints */
+	/* check if this opcode actually allows the modes we got */
 	switch (inst->opcode)
 	{
 	case 1: /* cmp */
+		/* cmp allows anything */
 		if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
 			!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
 		{
@@ -594,8 +548,10 @@ int validate_addressing_modes(Instruction* inst, char* file_name, int line_numbe
 			return FAILURE;
 		}
 		break;
+
 	case 0: /* mov */
 	case 2: /* add, sub */
+		/* cant have immediate as destination */
 		if (!(inst->src_mode == IMMEDIATE || inst->src_mode == DIRECT || inst->src_mode == REGISTER_DIRECT) ||
 			!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
 		{
@@ -603,80 +559,92 @@ int validate_addressing_modes(Instruction* inst, char* file_name, int line_numbe
 			return FAILURE;
 		}
 		break;
+
 	case 4: /* lea */
+		/* lea only works with direct as source */
 		if (!(inst->src_mode == DIRECT) || !(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
 		{
 			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
 			return FAILURE;
 		}
 		break;
+
 	case 5: /* clr, not, inc, dec */
 	case 12: /* red */
+		/* dest cannot be immediate */
 		if (!(inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
 		{
 			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
 			return FAILURE;
 		}
 		break;
+
 	case 9: /* jmp, bne, jsr */
+		/* these jump to a label, can be relative */
 		if (!(inst->dest_mode == DIRECT || inst->dest_mode == RELATIVE))
 		{
 			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
 			return FAILURE;
 		}
 		break;
+
 	case 13: /* prn */
+		/* prn allows all */
 		if (!(inst->dest_mode == IMMEDIATE || inst->dest_mode == DIRECT || inst->dest_mode == REGISTER_DIRECT))
 		{
 			print_ext_error(ERROR_INVALID_OPERAND_ADDRESSING_MODE, file_name, line_number);
 			return FAILURE;
 		}
 		break;
+
 	case 14: /* rts */
 	case 15: /* stop */
+		/* no operands allowed */
 		if (inst->src_mode != UNKNOWN || inst->dest_mode != UNKNOWN)
 		{
 			print_ext_error(ERROR_EXTRA_OPERANDS, file_name, line_number);
 			return FAILURE;
 		}
 		break;
+
 	default:
+		/* if opcode unknown, bail */
 		print_ext_error(ERROR_INVALID_OPCODE, file_name, line_number);
 		return FAILURE;
 	}
 
-	return SUCCESS; /* Valid addressing modes */
+	return SUCCESS; /* looks good */
 }
 
 char* getWord(char* line, char* word)
 {
-	int i = 0; /* Index for the word */
+	int i = 0; /* index into the word buffer */
 
-	/* Check for NULL pointers */
+	/* check for NULL pointers */
 	if (!line || !word)
 	{
 		return NULL;
 	}
 
-	line = skipSpaces(line); /* Skip leading spaces */
+	line = skipSpaces(line); /* skip any leading spaces */
 
-	/* Extract word until space, comma, or end of string */
+	/* grab characters till we hit space, comma, newline etc */
 	while (*line != ' ' && *line != ',' && *line != '\0' && *line != '\n' && i < MAX_LINE_LENGTH - 1)
 	{
 		word[i++] = *line++;
 	}
-	word[i] = '\0'; /* Null-terminate the word */
+	word[i] = '\0'; /* end it properly */
 
-	return line; /* Return pointer to the next part of the string */
+	return line; /* return */
 }
 
 int getNum(char* line, int* num, char* file_name, int line_number)
 {
-	char buffer[MAX_LINE_LENGTH] = {0}; /* Buffer to store the number */
-	int i = 0; /* Index for the buffer */
-	int length = 0; /* Length of the number */
-	char* endptr; /* Pointer to the end of the number */
-	int tempNum; /* Temporary number */
+	char buffer[MAX_LINE_LENGTH] = {0}; /* hold the number text */
+	int i = 0; /* for indexing */
+	int length = 0; /* how long is the number */
+	char* endptr; /* strtol will use this */
+	int tempNum; /* final result before storing */
 
 	if (!line || !num)
 	{
@@ -684,21 +652,20 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 		return 0;
 	}
 
-	line = skipSpaces(line);
+	line = skipSpaces(line); /* ignore leading spaces */
 
-	/* Check if the first character is '-' or '+' for negative/positive numbers */
+	/* could start with sign */
 	if (*line == '-' || *line == '+')
 	{
 		buffer[i++] = *line++;
 		length++;
 	}
 
-	/* Parse digits until ',' or end of string */
+	/* now parse digits */
 	while (*line != ',' && *line != '\0' && !isspace(*line))
 	{
 		if (!isdigit(*line))
 		{
-			/* Invalid character in number */
 			print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
 			return 0;
 		}
@@ -706,47 +673,46 @@ int getNum(char* line, int* num, char* file_name, int line_number)
 		length++;
 	}
 
-	buffer[i] = '\0'; /* Null-terminate the buffer */
+	buffer[i] = '\0'; /* close the string */
 
-	/* Check if buffer contains only a valid number */
+	/* make sure we actually got a number */
 	if (i == 0 || (i == 1 && (buffer[0] == '-' || buffer[0] == '+')))
 	{
-		/* No valid digits after sign or empty buffer */
 		print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
 		return 0;
 	}
 
-	if (strlen(buffer) > 8) /* Check if the number is too long */
+	/* check if the number is too long (8 digits is more than allowed range) */
+	if (strlen(buffer) > 8)
 	{
 		print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_number);
 		return 0;
 	}
 
-	/* Convert the extracted string to an integer */
-	tempNum = strtol(buffer, &endptr, 10);
+	tempNum = strtol(buffer, &endptr, 10); /* turn it into an int */
 
-	/* Check for invalid range */
+	/* out of range? */
 	if (tempNum > MAX_IMMEDIATE_VALUE || tempNum < MIN_IMMEDIATE_VALUE)
 	{
 		print_ext_error(ERROR_NUMBER_OVERFLOW, file_name, line_number);
 		return 0;
 	}
 
-	*num = tempNum; /* Store the parsed number */
+	*num = tempNum; /* store the result */
 
-	/* Ensure full parsing without leftover characters */
+	/* if strtol didn't parse all of it fail */
 	if (*endptr != '\0')
 	{
 		print_ext_error(ERROR_INVALID_NUMBER, file_name, line_number);
 		return 0;
 	}
 
-	return length; /* success */
+	return length; /* return how many chars we moved past */
 }
 
 char* skipSpaces(char* line)
 {
-	/* Skip leading spaces */
+	/* walk past all the spaces */
 	while (isspace(*line))
 	{
 		line++;
@@ -756,18 +722,18 @@ char* skipSpaces(char* line)
 
 void removeSpaces(char* p)
 {
-	char* write = p; /* Pointer to write to */
-	char* read = p; /* Pointer to read from */
+	char* write = p; /* write head */
+	char* read = p; /* read head */
 
 	while (*read != '\0')
 	{
-		/* Copy non-space characters */
+		/* only copy non-spaces */
 		if (!isspace(*read))
 		{
-			*write = *read; /* Copy the character */
-			write++; /* Move the write pointer */
+			*write = *read;
+			write++;
 		}
-		read++; /* Move the read pointer */
+		read++;
 	}
-	*write = '\0'; /* Null-terminate the modified string */
+	*write = '\0'; /* end the new string */
 }

@@ -57,13 +57,12 @@ int handle_extern(char* line, label_table** label_head, char* file_name, int lin
  *
  * @param line The input line containing the .data directive.
  * @param DC A pointer to the data counter.
- * @param IC The current instruction counter value.
  * @param data_list A pointer to the data list structure.
  * @param file_name The name of the input file for error reporting.
  * @param line_count The current line number for error reporting.
  * @return int Returns 0 on success, or 1 on failure.
  */
-int encode_data(char* line, int* DC, int IC, DataList* data_list, char* file_name, int line_count);
+int encode_data(char* line, int* DC, DataList* data_list, char* file_name, int line_count);
 
 /**
  * @brief Processes the .string directive.
@@ -74,12 +73,11 @@ int encode_data(char* line, int* DC, int IC, DataList* data_list, char* file_nam
  *
  * @param line The input line containing the .string directive.
  * @param DC A pointer to the data counter.
- * @param IC The current instruction counter value.
  * @param data_list A pointer to the data list structure.
  * @param file_name The name of the input file for error reporting.
  * @param line_count The current line number for error reporting.
  * @return int Returns 0 on success, or 1 on failure.
  */
-int encode_string(char* line, int* DC, int IC, DataList* data_list, char* file_name, int line_count);
+int encode_string(char* line, int* DC, DataList* data_list, char* file_name, int line_count);
 
 #endif
