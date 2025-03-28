@@ -9,7 +9,7 @@
 #include "errors.h"
 
 #define REGISTER_COUNT 8 /* Number of registers */
-#define SAVED_WORDS_COUNT 20 /* Number of saved words */
+#define SAVED_WORDS_COUNT 21 /* Number of saved words */
 
 /**
  * @brief Allocates memory dynamically and checks for allocation failures.

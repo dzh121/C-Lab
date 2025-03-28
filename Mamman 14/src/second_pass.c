@@ -41,6 +41,10 @@ int handle_entry(char *line, label_table *label_head, char *file_name, int line_
             return FAILURE;
         }
 
+        if (label->type == ENTRY) {
+            print_ext_warning(WARNING_ENTRY_ALREADY_DEFINED, file_name, line_count);
+        }
+
         /* mark it as entry */
         label->type = ENTRY;
         return SUCCESS;

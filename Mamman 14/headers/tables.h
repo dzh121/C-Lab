@@ -98,14 +98,4 @@ void init_instruction_list(InstructionList *list);
  */
 void add_instruction(InstructionList *list, Instruction *inst);
 
-/**
- * @brief Prints the instruction list for debugging.
- *
- * Iterates through the instruction list and prints each instruction's details.
- * for debugging purposes.
- *
- * @param list A pointer to the instruction list.
- */
-void print_instruction_list(InstructionList *list);
-
 #endif

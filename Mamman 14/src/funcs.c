@@ -9,7 +9,7 @@ const char *registers[] = {
 const char *saved_words[] = {
     "mov", "cmp", "add", "sub", "lea", "clr", "not", "inc",
     "dec", "jmp", "bne", "red", "prn", "jsr", "rts", "stop", "data", "string",
-    "entry", "extern"
+    "entry", "extern", "mcro"
 };
 
 void *handle_malloc(long size) {

@@ -68,6 +68,7 @@
 /* General warnings */
 #define WARNING_LABEL_AT_START_ENTRY "Label at the start of .entry is meaningless"
 #define WARNING_LABEL_AT_START_EXTERN "Label at the start of .extern is meaningless"
+#define WARNING_ENTRY_ALREADY_DEFINED "Entry label already defined"
 
 /* General Errors */
 #define ERROR_BUILD_OUTPUT_FAILED "Failed to build output files"

@@ -15,6 +15,9 @@ void add_address_node(ADDRESS_LIST **head, int addr) {
     ADDRESS_LIST *new_node = build_address_node(addr); /* Create a new node */
     ADDRESS_LIST *temp = *head; /* Create a temporary pointer */
 
+    if (!new_node) {
+        return; /* Memory allocation failed */
+    }
     /* Check if the head is NULL */
     if (*head == NULL) {
         *head = new_node; /* set the head to the new node */
@@ -48,6 +51,7 @@ label_table *build_label(char *name, int addr, int line, LabelType type) {
     }
     /* Copy the name */
     strcpy(new_label->name, name);
+    new_label->name[MAX_LABEL_SIZE - 1] = '\0'; /* Ensure null-termination */
     new_label->addr = addr; /* Set the address */
     new_label->line = line; /* Set the line number */
     new_label->type = type; /* Set the label type */
@@ -70,6 +74,10 @@ int add_label_list(label_table **head, char *name, int addr, int line, LabelType
 
     /* Build the new label */
     new_node = build_label(name, addr, line, type);
+    if (!new_node) {
+        return FAILURE;
+    }
+
     if (*head == NULL) {
         *head = new_node; /* Set the head to the new label */
     } else {
@@ -117,18 +125,5 @@ void add_instruction(InstructionList *list, Instruction *inst) {
     } else {
         list->tail->next = new_node; /* Add the new node to the end of the list */
         list->tail = new_node; /* Set the tail to the new node */
-    }
-}
-
-void print_instruction_list(InstructionList *list) {
-    InstructionNode *current = list->head;
-    printf("\nInstruction List:\n");
-    while (current) {
-        printf("Instruction: %s, Opcode: %d, Funct: %d, Src Mode: %d, Src Reg: %d, Dest Mode: %d, Dest Reg: %d, ARE: %d, Src Label: %s, Dest Label: %s\n",
-               current->instruction.name, current->instruction.opcode, current->instruction.funct,
-               current->instruction.src_mode, current->instruction.src_operand, current->instruction.dest_mode,
-               current->instruction.dest_operand, current->instruction.are, current->instruction.src_label,
-               current->instruction.dest_label);
-        current = current->next;
     }
 }

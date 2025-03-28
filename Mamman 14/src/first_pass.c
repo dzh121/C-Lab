@@ -186,7 +186,7 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 
 		memset(label, '\0', sizeof(label)); /* clear label each line */
 
-		after_label = strchr(line, ':'); /* is there a label? */
+		after_label = strchr(line, ':'); /* is there a label(ends with :) */
 		if (after_label != NULL)
 		{
 			label_length = after_label - line; /* get label length (not including :) */
@@ -201,15 +201,6 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 				continue;
 			}
 
-			/* check if there’s extra text after the label */
-			if (*after_label != ':')
-			{
-				did_fail = TRUE;
-				print_ext_error(ERROR_MISSING_COLON, file_name, line_count);
-				continue;
-			}
-
-			/* skip ':' */
 			after_label++; /* skip ':' */
 
 			/* check if there’s a space after the label */
@@ -348,7 +339,8 @@ int first_pass(char* file_name, DataList* data_list, InstructionList* instructio
 		{
 			handle_memory_overflow(file_name, current_data->address + *ICF);
 			did_fail = TRUE;
-			/* we will assume if it cannot fit in the memory, it will be ignored because the .ob will not be built*/
+			/* we will remove it from memory */
+			current_data->address = 0; /* set to 0 the .ob will not be built and this won't be a problem */
 		}
 		else
 		{
